@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:theme="@style/AppTheme.Posenet"
+    android:background="@color/dracula_background"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center"
+    android:stretchColumns="0,1">
+
+  <TableRow
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:background="@color/dracula_background"
+      android:layout_gravity="center_vertical"
+      android:layout_weight="1">
+
+    <SurfaceView
+      android:id="@+id/surfaceView"
+      android:layout_width="0dp"
+      android:layout_height="fill_parent"
+      android:layout_gravity="center"
+      android:layout_weight=".50"
+      />
+
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_marginTop="10dp"
+        android:layout_weight=".50"/>
+
+  </TableRow>
+</TableLayout>

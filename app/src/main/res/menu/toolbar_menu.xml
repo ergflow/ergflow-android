@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Settings, should always be in the overflow -->
+    <item android:id="@+id/item_front_cam"
+        android:title="@string/item_front_cam"/>
+    <item android:id="@+id/item_back_cam"
+        android:title="@string/item_back_cam"/>
+    <item android:id="@+id/item_cam_on_right"
+        android:title="@string/item_cam_on_right"/>
+    <item android:id="@+id/item_cam_on_left"
+        android:title="@string/item_cam_on_left"/>
+    <item android:id="@+id/item_save_report"
+        android:title="@string/item_save_report"/>
+
+</menu>

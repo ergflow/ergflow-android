@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+ Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<resources>
+  <color name="tf_orange">#ff6f00</color>
+<!--  <color name="tfe_color_primary_dark">#ff6f00</color>-->
+  <color name="tfe_color_primary_dark">#000000</color>
+<!--  <color name="tfe_color_accent">#425066</color>-->
+<!--  <color name="tfe_color_accent">#E4B429</color>-->
+  <color name="tfe_toolbar_background">#000000</color>
+  <color name="tfe_color_text">#000000</color>
+  <color name="tfe_toolbar_text">#ffffff</color>
+  <color name="tfe_pm4_background">#bacbd2</color>
+  <color name="dracula_background">#2b2b2b</color>
+  <color name="dracula_current_line">#323232</color>
+  <color name="dracula_selection">#214283</color>
+  <color name="dracula_foreground">#a9b7c6</color>
+  <color name="dracula_comment">#808080</color>
+  <color name="dracula_black">#000000</color>
+  <color name="dracula_blue">#5394ec</color>
+  <color name="dracula_cyan">#299999</color>
+  <color name="dracula_gray">#555555</color>
+  <color name="dracula_green">#379c1a</color>
+  <color name="dracula_magenta">#ae8abe</color>
+  <color name="dracula_red">#e74644</color>
+  <color name="dracula_white">#eeeeee</color>
+  <color name="dracula_yellow">#dcc457</color>
+
+  <color name="tfe_good">#607000</color>
+  <color name="tfe_warning">#D93F00</color>
+  <color name="tfe_error">#80001F</color>
+
+  <color name="tfe_semi_transparent">#66000000</color>
+  <color name="tfe_transparent">#00000000</color>
+</resources>
