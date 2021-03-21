@@ -5,19 +5,21 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.text.format.DateUtils
-import android.util.Log
 import org.ergflow.Coach
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import java.io.ByteArrayOutputStream
 import java.util.Base64
 
+/**
+ * Checks for proper forward shin angle at the catch.
+ */
 class ShinAngle(coach: Coach) : BaseFaultChecker(coach) {
 
     override val title = "Shin Angle"
     override val description = "Checks for proper forward shin angle at the catch."
     override val strokeHistoryUnit = "°"
-    var maxAngle = 110
-    var previousAngle = 0
+    private var maxAngle = 110
+    private var previousAngle = 0
     private var catchTimeOfBadStroke = 0L
     private var badAngle = 0.0
 
@@ -114,12 +116,5 @@ class ShinAngle(coach: Coach) : BaseFaultChecker(coach) {
                 <img src="data:image/jpg;base64, $imageData"/>
             </td></tr>
         """
-    }
-
-    companion object {
-        /**
-         * Tag for the [Log].
-         */
-        private const val TAG = "ShinAngle"
     }
 }

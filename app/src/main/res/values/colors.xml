@@ -16,10 +16,7 @@
 
 <resources>
   <color name="tf_orange">#ff6f00</color>
-<!--  <color name="tfe_color_primary_dark">#ff6f00</color>-->
   <color name="tfe_color_primary_dark">#000000</color>
-<!--  <color name="tfe_color_accent">#425066</color>-->
-<!--  <color name="tfe_color_accent">#E4B429</color>-->
   <color name="tfe_toolbar_background">#000000</color>
   <color name="tfe_color_text">#000000</color>
   <color name="tfe_toolbar_text">#ffffff</color>

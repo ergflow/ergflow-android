@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.ergflow.posenet
+package org.ergflow.activity
 
 import android.Manifest
 import android.app.AlertDialog

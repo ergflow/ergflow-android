@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package org.ergflow.posenet
+package org.ergflow.activity
 
 /** Utility class for manipulating images.  */
 object ImageUtils {

@@ -1,4 +1,4 @@
-package org.ergflow.posenet
+package org.ergflow.activity
 
 import android.app.Activity
 import android.content.Intent
@@ -6,25 +6,23 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import org.ergflow.Report
-import org.ergflow.posenet.databinding.TfePnActivityWebviewBinding
+import org.ergflow.activity.databinding.EfActivityWebviewBinding
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import kotlin.concurrent.fixedRateTimer
 
 const val WRITE_REQUEST_CODE = 101
 const val TAG = "WebViewActivity"
 
+/***
+ * Activity for displaying the html reports.
+ */
 class WebViewActivity : Activity() {
-    private lateinit var binding: TfePnActivityWebviewBinding
+    private lateinit var binding: EfActivityWebviewBinding
     private var reportTimestamp: String? = null
     private var cachedReportPath: String? = null
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = TfePnActivityWebviewBinding.inflate(layoutInflater)
+        binding = EfActivityWebviewBinding.inflate(layoutInflater)
         val webView = binding.root
         setContentView(webView)
         val settings = webView.settings
@@ -42,13 +40,12 @@ class WebViewActivity : Activity() {
         builder.setMessage("Save report?")
 
         builder.setPositiveButton("Yes") { _, _ ->
-           Log.i(TAG, "Save report $reportTimestamp")
+            Log.i(TAG, "Save report $reportTimestamp")
             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
             intent.addCategory(Intent.CATEGORY_OPENABLE)
             intent.type = "text/html"
             intent.putExtra(Intent.EXTRA_TITLE, "ErgFlowReport_$reportTimestamp.html")
             startActivityForResult(intent, WRITE_REQUEST_CODE)
-            super.onBackPressed()
         }
 
         builder.setNegativeButton("No") { _, _ ->
@@ -69,9 +66,9 @@ class WebViewActivity : Activity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == Report.WRITE_REQUEST_CODE) {
+        if (requestCode == WRITE_REQUEST_CODE) {
             when (resultCode) {
-                Activity.RESULT_OK -> data?.data?.let { uri ->
+                RESULT_OK -> data?.data?.let { uri ->
                     cachedReportPath?.apply {
                         val source = File(this)
                         if (source.exists()) {
@@ -79,17 +76,18 @@ class WebViewActivity : Activity() {
                             contentResolver?.openOutputStream(uri)?.use { out ->
                                 source.inputStream().use { it.copyTo(out) }
                             }
-                            source.delete()
+                            source.deleteOnExit()
                         } else {
                             Log.w(TAG, "Source ${source.absolutePath} does not exist")
                             showToast("Unable to save the report")
                         }
                     }
                 }
-                Activity.RESULT_CANCELED -> {
+                RESULT_CANCELED -> {
                 }
             }
         }
+        super.onBackPressed()
     }
 
     /**
@@ -97,7 +95,7 @@ class WebViewActivity : Activity() {
      *
      * @param text The message to show
      */
-    private fun showToast(text: String) {
+    private fun showToast(@Suppress("SameParameterValue") text: String) {
         runOnUiThread { Toast.makeText(this, text, Toast.LENGTH_SHORT).show() }
     }
 }

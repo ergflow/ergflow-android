@@ -16,6 +16,11 @@ import java.util.Base64
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
+/**
+ * Check that knees stay down as hands pass during
+ * the recovery. The measured value is the difference in knee height at the finish
+ * compared to knee height when hands pass the thighs.
+ */
 class HandsOut(coach: Coach) : BaseFaultChecker(coach) {
 
     override val title = "Hands Out"
@@ -36,7 +41,7 @@ class HandsOut(coach: Coach) : BaseFaultChecker(coach) {
     }
 
     override fun getFaultReminderMessage(): String {
-        return "Focus on getting you hands out, rocking over at the hips, and keeping knees down " + "until the hands pass."
+        return "Focus on getting you hands out, rocking over at the hips, and keeping knees down until the hands pass."
     }
 
     override fun getFixedMessage(): String {
@@ -70,7 +75,7 @@ class HandsOut(coach: Coach) : BaseFaultChecker(coach) {
                     } else {
                         badStroke()
                         badHandsMidThighTimestamp = handsMidThighTimestamp
-                        badFinishTimestamp = rower.finishWrist?.time ?: 0L
+                        badFinishTimestamp = rower.timeOfLatestFinish
                     }
                 }
             }

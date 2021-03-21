@@ -22,5 +22,6 @@
   <string name="item_back_cam">Back camera</string>
   <string name="item_cam_on_right">Camera on right</string>
   <string name="item_cam_on_left">Camera on left</string>
-  <string name="item_save_report">Save report</string>
+  <string name="item_save_report">Generate report</string>
+    <string name="camera_view">Camera view</string>
 </resources>

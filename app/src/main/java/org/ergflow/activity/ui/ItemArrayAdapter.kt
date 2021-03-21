@@ -1,13 +1,16 @@
-package org.ergflow.ui
+package org.ergflow.activity.ui
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import org.ergflow.posenet.R
-import org.ergflow.posenet.databinding.ItemLayoutBinding
+import org.ergflow.activity.R
+import org.ergflow.activity.databinding.EfItemLayoutBinding
 
+/***
+ * Three column item row for the list view.
+ */
 class ItemArrayAdapter(context: Context?, textViewResourceId: Int) :
     ArrayAdapter<ItemArrayAdapter.Item>(context!!, textViewResourceId) {
 
@@ -20,7 +23,7 @@ class ItemArrayAdapter(context: Context?, textViewResourceId: Int) :
         var backgroundColor: Int?,
     )
 
-    val items = mutableMapOf<String, Item>()
+    private val items = mutableMapOf<String, Item>()
     private val defaultTextColor = context!!.resources.getColor(R.color.dracula_foreground, null)
     private val defaultBackgroundColor =
         context!!.resources.getColor(R.color.dracula_background, null)
@@ -57,15 +60,15 @@ class ItemArrayAdapter(context: Context?, textViewResourceId: Int) :
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var row = convertView
-        val itemLayoutBinding: ItemLayoutBinding
+        val itemLayoutBinding: EfItemLayoutBinding
 
         if (row == null || row.tag == null) {
             val inflater =
                 this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-            itemLayoutBinding = ItemLayoutBinding.inflate(inflater)
+            itemLayoutBinding = EfItemLayoutBinding.inflate(inflater)
             row = itemLayoutBinding.root
         } else {
-            itemLayoutBinding = row.tag as ItemLayoutBinding
+            itemLayoutBinding = row.tag as EfItemLayoutBinding
         }
 
         val item = getItem(position)

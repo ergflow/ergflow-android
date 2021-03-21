@@ -12,15 +12,18 @@ import java.io.ByteArrayOutputStream
 import java.util.Base64
 import kotlin.math.cos
 
+/**
+ * Checks for proper layback position at the finish.
+ */
 class Layback(coach: Coach) : BaseFaultChecker(coach) {
 
     override val title = "Layback Position"
     override val description = "Checks for proper layback position at the finish."
 
     override val strokeHistoryUnit = "°"
-    var minFinishAngle = 100
-    var maxFinishAngle = 139
-    var currentFaultType = ""
+    private var minFinishAngle = 95
+    private var maxFinishAngle = 139
+    private var currentFaultType = ""
     private var finishTimeOfBadStroke = 0L
     private var badBodyAngle = 0.0
 
@@ -52,7 +55,7 @@ class Layback(coach: Coach) : BaseFaultChecker(coach) {
                         goodStroke()
                     } else {
                         badStroke()
-                        finishTimeOfBadStroke = rower.finishWrist?.time ?: 0
+                        finishTimeOfBadStroke = rower.timeOfLatestFinish
                         badBodyAngle = this
                     }
                     when {

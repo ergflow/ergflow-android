@@ -7,7 +7,6 @@ import android.graphics.Paint
 import android.text.format.DateUtils
 import android.util.Log
 import org.ergflow.Coach
-import org.ergflow.Frame
 import java.io.ByteArrayOutputStream
 import java.util.Base64
 import kotlin.math.cos
@@ -15,13 +14,17 @@ import kotlin.math.max
 
 class BadHandLevelFrame(val time: Long, val delta: Float)
 
+/**
+ * Checks for consistent hand levels by measuring difference in
+ * actual heights with expected heights.
+ */
 class HandLevels(coach: Coach) : BaseFaultChecker(coach) {
 
     override val title = "Hand levels"
     override val description = "Checks for consistent hand levels by measuring difference in " +
         "actual heights with expected heights"
 
-    var allowedMaxDeviation = 10
+    private var allowedMaxDeviation = 5
     override val strokeHistoryUnit = "Δ"
     private var leftX: Float? = null
     private var rightX: Float? = null

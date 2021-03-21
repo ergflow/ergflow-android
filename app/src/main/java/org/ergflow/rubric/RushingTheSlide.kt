@@ -3,6 +3,9 @@ package org.ergflow.rubric
 import org.ergflow.Coach
 import org.ergflow.Rower
 
+/**
+ * Checks that recovery duration is longer than drive duration.
+ */
 class RushingTheSlide(coach: Coach) : BaseFaultChecker(coach) {
 
     override val title = "Slide Ratio"

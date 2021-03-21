@@ -1,20 +1,4 @@
-/*
- * Copyright 2019 The TensorFlow Authors. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package org.ergflow.posenet
+package org.ergflow.activity
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -26,15 +10,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import org.ergflow.Point
 import org.ergflow.StrokeAnalyzer
-import org.ergflow.posenet.databinding.TfePnActivityTestBinding
-import org.ergflow.ui.ItemArrayAdapter
-import org.ergflow.ui.ItemArrayAdapter.Item
+import org.ergflow.activity.databinding.EfActivityTestBinding
+import org.ergflow.activity.ui.ItemArrayAdapter
+import org.ergflow.activity.ui.ItemArrayAdapter.Item
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import org.tensorflow.lite.examples.posenet.lib.Posenet
 
 class TestActivity : AppCompatActivity() {
 
-    private lateinit var binding: TfePnActivityTestBinding
+    private lateinit var binding: EfActivityTestBinding
 
     /** Returns a resized bitmap of the drawable image.    */
     private fun drawableToBitmap(drawable: Drawable): Bitmap {
@@ -50,7 +34,7 @@ class TestActivity : AppCompatActivity() {
     /** Calls the Posenet library functions.    */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = TfePnActivityTestBinding.inflate(layoutInflater)
+        binding = EfActivityTestBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
 
@@ -82,8 +66,8 @@ class TestActivity : AppCompatActivity() {
             }
         }
 
-        val itemArrayAdater = ItemArrayAdapter(applicationContext, R.layout.item_layout)
-        val strokeAnalyzer = StrokeAnalyzer(this.applicationContext) {}
+        val itemArrayAdater = ItemArrayAdapter(applicationContext, R.layout.ef_item_layout)
+        val strokeAnalyzer = StrokeAnalyzer(this.applicationContext)
         strokeAnalyzer.analyzeFrame(person, mutableBitmap)
         strokeAnalyzer.updateDisplay(canvas)
         val rower = strokeAnalyzer.rower
@@ -102,7 +86,7 @@ class TestActivity : AppCompatActivity() {
         itemArrayAdater.addOrUpdate(
             Item(
                 "a",
-                "This is a very long item with lots and lots of" + " text in it. Not sure if it will wrap around!",
+                "This is a very long item with lots and lots of text in it. Not sure if it will wrap around!",
                 "",
                 "",
                 null,
@@ -139,73 +123,6 @@ class TestActivity : AppCompatActivity() {
                 Color.parseColor("#607000"),
                 null
             )
-        ) // green
-//        val tableRight = binding.tableRight
-//        strokeAnalyzer?.rower?.apply {
-//            runOnUiThread {
-//                addRow(
-//                    "Test",
-//                    "Overall Mark",
-//                    "Last 10 Strokes",
-//                    "Last Stroke",
-//                    true
-//                )
-//                addRow(
-//                    "Stroke Rate",
-//                    rower.strokeRate.toString(),
-//                    rower.strokeRate.toString(),
-//                    "asfasd",
-//                    false
-//                )
-//            }
-//        }
+        )
     }
-
-//    fun addRow(
-//        lable: String,
-//        overallMark: String,
-//        lastTenMark: String,
-//        lastStroke: String,
-//        headerRow: Boolean
-//    ) {
-//        val table = binding.tableRight
-//        table.addView(
-//            TableRow(applicationContext).apply {
-//                layoutParams = TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT)
-//                addView(
-//                    TextView(context).apply {
-//                        text = lable
-//                        setTextColor(Color.WHITE)
-//                        setPadding(10, 0, 0, 0)
-//                        if (headerRow) paintFlags = Paint.UNDERLINE_TEXT_FLAG
-//                    }
-//                )
-//                addView(
-//                    TextView(context).apply {
-//                        text = overallMark
-//                        setTextColor(Color.WHITE)
-//                        setPadding(10, 0, 0, 0)
-//                        if (headerRow) paintFlags = Paint.UNDERLINE_TEXT_FLAG
-//                    }
-//                )
-//                addView(
-//                    TextView(context).apply {
-//
-//                        text = lastTenMark
-//                        setTextColor(Color.WHITE)
-//                        setPadding(10, 0, 0, 0)
-//                        if (headerRow) paintFlags = Paint.UNDERLINE_TEXT_FLAG
-//                    }
-//                )
-//                addView(
-//                    TextView(context).apply {
-//                        text = lastStroke
-//                        setTextColor(Color.WHITE)
-//                        setPadding(10, 0, 0, 0)
-//                        if (headerRow) paintFlags = Paint.UNDERLINE_TEXT_FLAG
-//                    }
-//                )
-//            }
-//        )
-//    }
 }

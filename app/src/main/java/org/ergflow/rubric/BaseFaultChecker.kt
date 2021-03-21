@@ -5,20 +5,21 @@ import org.ergflow.Coach
 import java.io.File
 import java.io.FileWriter
 
+/**
+ * Base fault checker class.
+ */
 abstract class BaseFaultChecker(final override val coach: Coach) : FaultChecker {
 
-    override var minStrokesBeforeResending = 10
     override var status = FaultChecker.Status.GOOD
     override val strokeHistory: MutableList<Float> = mutableListOf()
     override var initialMessageSent = false
     override var faults: MutableMap<Int, Float> = mutableMapOf()
-    override var remindAfter: Int = 10
     override var totalGoodStrokes = 0
     override var goodConsecutiveStrokes = 3
     override var badConsecutiveStrokes = 0
     override var numberOfFaultyStrokes = 0
     override var timeOfLastMessage = 0L
-    var numberOfStrokesReported = 0
+    private var numberOfStrokesReported = 0
 
     val rower = coach.rower
 

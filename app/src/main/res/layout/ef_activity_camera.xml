@@ -10,7 +10,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="24dp"
-        android:background="@color/dracula_current_line"
+        android:background="@color/tf_orange"
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.Dark"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Dark">
@@ -25,7 +25,7 @@
     android:layout_below="@+id/toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:context="org.ergflow.posenet.CameraActivity">
+    tools:context="org.ergflow.activity.CameraActivity">
 
 
 

@@ -14,16 +14,21 @@ import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import java.io.ByteArrayOutputStream
 import java.util.Base64
 
+/**
+ * Measures the change in body angle during the recovery before the
+ * catch. Catch body angle should be established early in the recovery and should not change
+ * at the catch.
+ */
 class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
 
     override val title = "Not Lunging at the Catch"
     override val description = "Measures the change in body angle during the recovery before the " +
-            "catch. Catch body angle should be established early in the recovery and should not " +
-            "change at the catch."
+        "catch. Catch body angle should be established early in the recovery and should not " +
+        "change at the catch."
     override val strokeHistoryUnit = "Δ°"
-    private val acceptableDeltaRange = -15.0..15.0
+    private val acceptableDeltaRange = -16.0..16.0
 
-    private var preLungeAngle = 0.0
+    private var preLungeAngle: Double? = null
     private var preLungeBitmap: Bitmap? = null
     private var preLungeHip: Point? = null
     private var preLungeShoulder: Point? = null
@@ -44,12 +49,12 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
 
     override fun getFaultInitialMessage(): String {
         return "You are lunging at the catch. Establish your catch angle early in the recovery " +
-                "and maintain it until the catch."
+            "and maintain it until the catch."
     }
 
     override fun getFaultReminderMessage(): String {
         return "Focus on establishing your catch angle after the finish and maintaining it during" +
-                " the catch."
+            " the catch."
     }
 
     override fun getFixedMessage(): String {
@@ -69,14 +74,15 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
         }
         if (event == Coach.Event.FINISH) {
             // Take the delta between catch angle and current body angle.
-            val delta = preLungeAngle - rower.catchBodyAngle!!
+            val catchAngle = rower.catchBodyAngle!!
+            val delta = (preLungeAngle?: catchAngle) - catchAngle
             Log.w(TAG, "delta $delta")
             preLungeAngle = rower.catchBodyAngle!!
             Log.w(TAG, "finish  preLungeAngle $preLungeAngle")
 
             strokeHistory.add(delta.toFloat())
 
-            if (rower.strokeCount < 2 || delta in acceptableDeltaRange) {
+            if (delta in acceptableDeltaRange) {
                 goodStroke()
             } else {
                 badStroke()
@@ -89,7 +95,8 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
     override fun updateDisplay() {
         if (status == FaultChecker.Status.FAULT_MESSAGE_SENT || goodConsecutiveStrokes < 3) {
             if (rower.catchFinishPct < 50 &&
-                (rower.phase == Rower.Phase.RECOVERY || rower.phase == Rower.Phase.CATCH)) {
+                (rower.phase == Rower.Phase.RECOVERY || rower.phase == Rower.Phase.CATCH)
+            ) {
                 val catchDeltax = rower.currentHip!!.x - rower.catchHip!!.x
                 coach.display.drawLine(
                     (rower.catchShoulder!!.x + catchDeltax).toFloat(),

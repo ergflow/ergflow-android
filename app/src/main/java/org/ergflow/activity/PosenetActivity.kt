@@ -1,23 +1,6 @@
-/*
- * Copyright 2019 The TensorFlow Authors. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package org.ergflow.posenet
+package org.ergflow.activity
 
 import android.Manifest
-import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
@@ -57,20 +40,16 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.WebSettings.PluginState
-import android.webkit.WebView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import org.ergflow.Report
 import org.ergflow.StrokeAnalyzer
-import org.ergflow.posenet.databinding.TfePnActivityPosenetBinding
-import org.ergflow.ui.ItemArrayAdapter
+import org.ergflow.activity.databinding.EfActivityPosenetBinding
+import org.ergflow.activity.ui.ItemArrayAdapter
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import org.tensorflow.lite.examples.posenet.lib.Person
 import org.tensorflow.lite.examples.posenet.lib.Posenet
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -83,6 +62,14 @@ const val WEBVIEW_URL = "org.ergflow.WebView.Url"
 const val REPORT_TIMESTAMP = "org.ergflow.WebView.ReportTimestamp"
 const val CACHED_REPORT = "org.ergflow.WebView.CachedReport"
 
+/** A shape for extracting frame data.   */
+private const val PREVIEW_WIDTH = 640
+private const val PREVIEW_HEIGHT = 480
+
+/**
+ * This activity ties everything together. It uses the camera to capture images, passes them to
+ * Posent for pose estimations, sends the results to the StrokeAnalyzer, and coordinates reporting.
+ */
 class PosenetActivity :
     Fragment(),
     ActivityCompat.OnRequestPermissionsResultCallback {
@@ -92,10 +79,6 @@ class PosenetActivity :
 
     /** Paint class holds the style and color information to draw geometries,text and bitmaps. */
     private var paint = Paint()
-
-    /** A shape for extracting frame data.   */
-    private val PREVIEW_WIDTH = 640
-    private val PREVIEW_HEIGHT = 480
 
     /** An object for the Posenet library.    */
     private lateinit var posenet: Posenet
@@ -112,7 +95,7 @@ class PosenetActivity :
     /** ID of the back [CameraDevice].   */
     private var backCameraId: String? = null
 
-    private var _binding: TfePnActivityPosenetBinding? = null
+    private var _binding: EfActivityPosenetBinding? = null
 
     /** View binding (only valid between onCreateView and onDestroyView).*/
     private val binding get() = _binding!!
@@ -170,7 +153,7 @@ class PosenetActivity :
 
     private var strokeAnalyzer: StrokeAnalyzer? = null
 
-    var itemArrayAdater: ItemArrayAdapter? = null
+    private var itemArrayAdater: ItemArrayAdapter? = null
 
     /** [CameraDevice.StateCallback] is called when [CameraDevice] changes its state.   */
     private val stateCallback = object : CameraDevice.StateCallback() {
@@ -249,10 +232,11 @@ class PosenetActivity :
             }
             val intent = Intent(context, WebViewActivity::class.java).apply {
                 putExtra(WEBVIEW_URL, cachedReportPath)
-                val timeStamp: String = report?.rower?.let {
-                    SimpleDateFormat("yyyy-MM-dd_HH.mm.ss",
-                        Locale.getDefault()).format(Date(it.startTime ?:
-                            System.currentTimeMillis()))
+                val timeStamp: String = report.rower.let {
+                    SimpleDateFormat(
+                        "yyyy-MM-dd_HH.mm.ss",
+                        Locale.getDefault()
+                    ).format(Date(it.startTime ?: System.currentTimeMillis()))
                 } ?: ""
                 putExtra(REPORT_TIMESTAMP, timeStamp)
                 putExtra(CACHED_REPORT, report.cachedReportPath)
@@ -260,7 +244,6 @@ class PosenetActivity :
 
             startActivityForResult(intent, 1)
         }
-
     }
 
     override fun onCreateView(
@@ -268,7 +251,7 @@ class PosenetActivity :
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = TfePnActivityPosenetBinding.inflate(inflater, container, false)
+        _binding = EfActivityPosenetBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -277,7 +260,7 @@ class PosenetActivity :
         surfaceView!!.setZOrderOnTop(true)
         surfaceHolder = surfaceView!!.holder
         surfaceHolder?.setFormat(PixelFormat.TRANSLUCENT)
-        itemArrayAdater = ItemArrayAdapter(context, R.layout.item_layout)
+        itemArrayAdater = ItemArrayAdapter(context, R.layout.ef_item_layout)
         val state = binding.listView.onSaveInstanceState()
         binding.listView.adapter = itemArrayAdater
         binding.listView.onRestoreInstanceState(state)
@@ -293,7 +276,7 @@ class PosenetActivity :
         super.onStart()
         openCamera()
         posenet = Posenet(this.context!!)
-        strokeAnalyzer = StrokeAnalyzer(this.context!!, ::saveReport)
+        strokeAnalyzer = StrokeAnalyzer(this.context!!)
         strokeAnalyzer!!.display.itemArrayAdapter = itemArrayAdater
     }
 
@@ -366,10 +349,12 @@ class PosenetActivity :
 
                 previewSize = Size(PREVIEW_WIDTH, PREVIEW_HEIGHT)
 
-                imageReader = ImageReader.newInstance(PREVIEW_WIDTH,
+                imageReader = ImageReader.newInstance(
+                    PREVIEW_WIDTH,
                     PREVIEW_HEIGHT,
                     ImageFormat.YUV_420_888, /*maxImages*/
-                    2)
+                    2
+                )
 
                 sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)!!
 
@@ -497,7 +482,8 @@ class PosenetActivity :
             val image = imageReader.acquireLatestImage() ?: return
             fillBytes(image.planes, yuvBytes)
 
-            ImageUtils.convertYUV420ToARGB8888(yuvBytes[0]!!,
+            ImageUtils.convertYUV420ToARGB8888(
+                yuvBytes[0]!!,
                 yuvBytes[1]!!,
                 yuvBytes[2]!!,
                 previewWidth,
@@ -508,7 +494,8 @@ class PosenetActivity :
                 image.planes[1].rowStride,
                 /*uvPixelStride=*/
                 image.planes[1].pixelStride,
-                rgbBytes)
+                rgbBytes
+            )
 
             // Create bitmap from int array
             val imageBitmap =
@@ -536,25 +523,29 @@ class PosenetActivity :
             modelInputRatio < bitmapRatio -> {
                 // New image is taller so we are height constrained.
                 val cropHeight = bitmap.height - (bitmap.width.toFloat() / modelInputRatio)
-                croppedBitmap = Bitmap.createBitmap(bitmap,
+                croppedBitmap = Bitmap.createBitmap(
+                    bitmap,
                     0,
                     (cropHeight / 2).toInt(),
                     bitmap.width,
-                    (bitmap.height - cropHeight).toInt())
+                    (bitmap.height - cropHeight).toInt()
+                )
             }
             else -> {
                 val cropWidth = bitmap.width - (bitmap.height.toFloat() * modelInputRatio)
-                croppedBitmap = Bitmap.createBitmap(bitmap,
+                croppedBitmap = Bitmap.createBitmap(
+                    bitmap,
                     (cropWidth / 2).toInt(),
                     0,
                     (bitmap.width - cropWidth).toInt(),
-                    bitmap.height)
+                    bitmap.height
+                )
             }
         }
         return flip(croppedBitmap)
     }
 
-    fun flip(bInput: Bitmap): Bitmap {
+    private fun flip(bInput: Bitmap): Bitmap {
         if (cameraOnRight) {
             val matrix = Matrix()
             matrix.preScale(-1.0f, 1.0f)
@@ -593,10 +584,12 @@ class PosenetActivity :
         val bottom: Int = top + screenHeight
 
         setPaint()
-        canvas.drawBitmap(bitmap,
+        canvas.drawBitmap(
+            bitmap,
             Rect(0, 0, bitmap.width, bitmap.height),
             Rect(left, top, right, bottom),
-            paint)
+            paint
+        )
 
         if (person.score >= minConfidence) {
             strokeAnalyzer?.analyzeFrame(person, bitmap)
@@ -630,10 +623,12 @@ class PosenetActivity :
     private fun createCameraPreviewSession() {
         try {
             // We capture images from preview in YUV format.
-            imageReader = ImageReader.newInstance(previewSize!!.width,
+            imageReader = ImageReader.newInstance(
+                previewSize!!.width,
                 previewSize!!.height,
                 ImageFormat.YUV_420_888,
-                2)
+                2
+            )
             imageReader!!.setOnImageAvailableListener(imageAvailableListener, backgroundHandler)
 
             // This is the surface we need to record images for processing.
@@ -655,8 +650,10 @@ class PosenetActivity :
                     captureSession = cameraCaptureSession
                     try {
                         // Auto focus should be continuous for camera preview.
-                        previewRequestBuilder!!.set(CaptureRequest.CONTROL_AF_MODE,
-                            CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+                        previewRequestBuilder!!.set(
+                            CaptureRequest.CONTROL_AF_MODE,
+                            CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
+                        )
                         // Flash is automatically enabled when necessary.
                         setAutoFlash(previewRequestBuilder!!)
 
@@ -672,10 +669,12 @@ class PosenetActivity :
                     showToast("Failed")
                 }
             }
-            val sessionConfiguration = SessionConfiguration(SessionConfiguration.SESSION_REGULAR,
+            val sessionConfiguration = SessionConfiguration(
+                SessionConfiguration.SESSION_REGULAR,
                 listOf(OutputConfiguration(recordingSurface)),
                 Executors.newCachedThreadPool(),
-                callback)
+                callback
+            )
 
             cameraDevice!!.createCaptureSession(sessionConfiguration)
 //        cameraDevice!!.createCaptureSession(
@@ -690,8 +689,10 @@ class PosenetActivity :
 
     private fun setAutoFlash(requestBuilder: CaptureRequest.Builder) {
         if (flashSupported) {
-            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH)
+            requestBuilder.set(
+                CaptureRequest.CONTROL_AE_MODE,
+                CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH
+            )
         }
     }
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.ergflow.posenet">
+    package="org.ergflow.activity">
 
   <uses-permission android:name="android.permission.CAMERA" />
   <uses-feature android:name="android.hardware.camera" />
@@ -22,12 +22,12 @@
 
     <activity
         android:screenOrientation="landscape"
-        android:name=".TestActivity"
+        android:name="org.ergflow.activity.TestActivity"
         android:label="@string/tfe_pn_app_name"
         android:exported="true">
     </activity>
 
-    <activity android:screenOrientation="landscape"  android:name=".CameraActivity"
+    <activity android:screenOrientation="landscape"  android:name="org.ergflow.activity.CameraActivity"
         android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
@@ -37,7 +37,7 @@
 
     <activity
         android:screenOrientation="landscape"
-        android:name=".WebViewActivity"
+        android:name="org.ergflow.activity.WebViewActivity"
         android:exported="true">
     </activity>
 

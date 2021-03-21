@@ -5,20 +5,21 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.text.format.DateUtils
 import androidx.core.content.res.ResourcesCompat
-import org.ergflow.posenet.MODEL_HEIGHT
-import org.ergflow.posenet.MODEL_WIDTH
-import org.ergflow.posenet.PosenetActivity
-import org.ergflow.posenet.R
+import org.ergflow.activity.MODEL_HEIGHT
+import org.ergflow.activity.MODEL_WIDTH
+import org.ergflow.activity.PosenetActivity
+import org.ergflow.activity.R
+import org.ergflow.activity.ui.ItemArrayAdapter
+import org.ergflow.activity.ui.ItemArrayAdapter.Item
 import org.ergflow.rubric.FaultChecker
-import org.ergflow.ui.ItemArrayAdapter
-import org.ergflow.ui.ItemArrayAdapter.Item
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import org.tensorflow.lite.examples.posenet.lib.Position
 import kotlin.math.roundToInt
 
+/**
+ * This class is used to draw things on the screen.
+ */
 class Display(val coach: Coach) {
-
-//    lateinit var toolBarText: TextView
 
     private val errorColor = coach.context.resources.getColor(R.color.dracula_red, null)
     private val warnColor = coach.context.resources.getColor(R.color.dracula_yellow, null)
@@ -42,33 +43,29 @@ class Display(val coach: Coach) {
     val green = Paint().apply {
         color = Color.GREEN
     }
-    val red = Paint().apply {
+    private val red = Paint().apply {
 
         color = Color.RED
     }
-    val blue = Paint().apply {
+    private val blue = Paint().apply {
 
         color = Color.BLUE
         strokeWidth = 8f
     }
-    val smallRed = Paint().apply {
+    private val smallRed = Paint().apply {
         color = Color.RED
         textSize = 16f
         strokeWidth = 3f
     }
-    val orange = Paint().apply {
+    private val orange = Paint().apply {
 
         color = Color.parseColor("#ff6f00")
     }
-    val white = Paint().apply {
+    private val white = Paint().apply {
         color = Color.WHITE
     }
-    private val orangeWide = Paint().apply {
-        color = Color.parseColor("#D93F00")
-        strokeWidth = 30f
-    }
 
-    val displayableBodyParts = listOf(
+    private val displayableBodyParts = listOf(
         BodyPart.LEFT_ANKLE,
         BodyPart.LEFT_KNEE,
         BodyPart.LEFT_HIP,
@@ -137,22 +134,7 @@ class Display(val coach: Coach) {
         // Not a typo. Need to use height here otherwise points don't line up
         canvas!!.height.toFloat() / MODEL_WIDTH
 
-    var row = 0
-
-    fun drawText(canvas: Canvas, row: Int, text: String) {
-        canvas.drawText(
-            text,
-            10f,
-            15 + row * 20f,
-            blackBorder,
-        )
-        canvas.drawText(
-            text,
-            10f,
-            15 + row * 20f,
-            smallYellow,
-        )
-    }
+    private var row = 0
 
     fun showRowerStats() {
 
@@ -316,7 +298,7 @@ class Display(val coach: Coach) {
         showTarget(bodyParts, targetPosition, paint, canvas!!)
     }
 
-    fun showTarget(
+    private fun showTarget(
         bodyParts: List<BodyPart>,
         targetPosition: Coach.TargetPosition,
         paint: Paint,
@@ -368,8 +350,6 @@ class Display(val coach: Coach) {
 
         val targetDriveMs = 1200L
         val driveScaleFactor = rower.driveMs / targetDriveMs.toDouble()
-        // use 1904 to fix target stroke rate at 22
-//        val driveScaleFactor = 1904 / targetDriveMs.toDouble()
         val segment: Int
         // There are 36 target segments for every 80ms of the target stroke
         // Segments 0-15 are the drive and 16-35 are the recovery
@@ -440,7 +420,7 @@ class Display(val coach: Coach) {
         drawLinesAndPoints(points, blue)
     }
 
-    fun drawLinesAndPoints(points: Map<BodyPart, Point>, paint: Paint) {
+    private fun drawLinesAndPoints(points: Map<BodyPart, Point>, paint: Paint) {
         // Draw lines
         PosenetActivity.bodyJoints.forEach { line ->
             val first = points[line.first] ?: return
@@ -462,8 +442,12 @@ class Display(val coach: Coach) {
     }
 
     fun showErgOverlay() {
-        val drawableErg = ResourcesCompat.getDrawable(coach.context.resources, R.drawable
-            .erg_overlay, null)
+        val drawableErg = ResourcesCompat.getDrawable(
+            coach.context.resources,
+            R.drawable
+                .erg_overlay,
+            null
+        )
         drawableErg?.setBounds(0, 0, canvas!!.width, canvas!!.height)
         drawableErg?.draw(canvas!!)
     }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.util.Log
+import android.widget.Toast
 import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_ANKLE
 import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_ELBOW
 import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_HIP
@@ -18,37 +19,38 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+
 /**
  * This class receives posnet Person detection results in realtime. It analyzes the detected
  * points and updates the Rower class and notifies the Coach class.
  * It also updates the display to show current rowing stats and
  */
-class StrokeAnalyzer(context: Context, val saveReportCallback: () -> Unit) {
+class StrokeAnalyzer(private val context: Context) {
 
     val rower = Rower()
     val coach = Coach(context, rower)
     val display = coach.display
-    var frameCount = 0
+    private var frameCount = 0
 
     private val poses = mutableMapOf<Long, Person>()
     private val poseShelfLife = 5000L
     private val frameShelfLife = 10_000L
 
     private var handUpFrameCount = 0
-    var consecutiveValidStrokes = 0
-    var consecutiveInvalidStrokes = 0
+    private var consecutiveValidStrokes = 0
+    private var consecutiveInvalidStrokes = 0
 
-    var shinLengths = LimitedList(30, 10)
-    var thighLengths = LimitedList(30, 10)
-    var bodyLengths = LimitedList(30, 10)
-    var upperArmLengths = LimitedList(30, 10)
-    var forearmLengths = LimitedList(30, 10)
+    private var shinLengths = LimitedList(30, 10)
+    private var thighLengths = LimitedList(30, 10)
+    private var bodyLengths = LimitedList(30, 10)
+    private var upperArmLengths = LimitedList(30, 10)
+    private var forearmLengths = LimitedList(30, 10)
 
-    var previousWrist: Point? = null
-    var newCatch: Point? = null
-    var newFinish: Point? = null
+    private var previousWrist: Point? = null
+    private var newCatch: Point? = null
+    private var newFinish: Point? = null
 
-    fun reset() {
+    private fun reset() {
         frameCount = 0
         handUpFrameCount = 0
         consecutiveValidStrokes = 0
@@ -145,12 +147,12 @@ class StrokeAnalyzer(context: Context, val saveReportCallback: () -> Unit) {
                         return false
                     }
                 } else if (++handUpFrameCount > 30) {
-                    Log.w(TAG, "Stop")
+                    Log.w(TAG, "reset")
+                    showToast("Resetting session")
                     coach.saveStats()
                     rower.reset()
                     coach.reset()
                     reset()
-                    saveReportCallback()
                     return false
                 }
             }
@@ -168,14 +170,14 @@ class StrokeAnalyzer(context: Context, val saveReportCallback: () -> Unit) {
             Log.d(
                 TAG,
                 "rower.currentBodyAngle=${rower.currentBodyAngle} " +
-                        "currentHip.time=${rower .currentHip?.time} " +
-                        "catchShoulder.time=${rower .catchShoulder?.time} " +
-                        "rower.catchFinishPct=${rower.catchFinishPct} " +
-                        "rower.currentShoulder!!.x=${rower.currentShoulder!!.x} " +
-                        "rower.catchShoulder!!.x=${rower.catchShoulder!!.x} " +
-                        "rower.finishShoulder!!.x=${rower.finishShoulder!!.x} " +
-                        "driveLength=$driveLength " +
-                        "rower.strokeCount.=${rower.strokeCount} "
+                    "currentHip.time=${rower .currentHip?.time} " +
+                    "catchShoulder.time=${rower .catchShoulder?.time} " +
+                    "rower.catchFinishPct=${rower.catchFinishPct} " +
+                    "rower.currentShoulder!!.x=${rower.currentShoulder!!.x} " +
+                    "rower.catchShoulder!!.x=${rower.catchShoulder!!.x} " +
+                    "rower.finishShoulder!!.x=${rower.finishShoulder!!.x} " +
+                    "driveLength=$driveLength " +
+                    "rower.strokeCount.=${rower.strokeCount} "
             )
             val now = System.currentTimeMillis()
             when {
@@ -197,14 +199,11 @@ class StrokeAnalyzer(context: Context, val saveReportCallback: () -> Unit) {
                         if (rower.isRowing && now - rower.catchTimePreviousToFinish > 9000) {
                             Log.w(
                                 TAG,
-                                "STOP!! rower.catchTimePreviousToFinish " +
+                                "PAUSE!! rower.catchTimePreviousToFinish " +
                                     "(${rower.catchTimePreviousToFinish}) was " +
                                     "${now - rower.catchTimePreviousToFinish} ms ago"
                             )
                             rower.isRowing = false
-                            rower.endTime = now
-                            coach.saveStats()
-                            saveReportCallback()
                         }
                         rower.phase = Rower.Phase.DRIVE
                         Log.d(TAG, "phase = ${rower.phase} $frameCount")
@@ -258,7 +257,7 @@ class StrokeAnalyzer(context: Context, val saveReportCallback: () -> Unit) {
             val previousCatchTime = rower.catchTimes[rower.strokeCount - 1] ?: return false
             val strokeMs = catchTime - previousCatchTime
             rower.strokeRate = (60f / (strokeMs / 1000f)).roundToInt()
-            Log.i(TAG, "strokeRate=${rower.strokeRate} " + "catchTime=$catchTime previousCatchTime=$previousCatchTime")
+            Log.i(TAG, "strokeRate=${rower.strokeRate} catchTime=$catchTime previousCatchTime=$previousCatchTime")
             rower.finishWrist?.also { finish ->
                 rower.driveMs = finish.time - previousCatchTime
                 val recoveryMs = strokeMs - rower.driveMs
@@ -268,9 +267,12 @@ class StrokeAnalyzer(context: Context, val saveReportCallback: () -> Unit) {
         rower.strokeCount++
 
         Log.i(TAG, "Catch!! strokePosPct=${rower.catchFinishPct}")
-        Log.i(TAG, "Catch time rower.catchShoulder?.time=${
+        Log.i(
+            TAG,
+            "Catch time rower.catchShoulder?.time=${
             rower.catchShoulder?.time
-        } now=$now")
+            } now=$now"
+        )
         Log.i(TAG, "Time since last catch = ${now - catchTime}")
         Log.i(TAG, "There were $frameCount frames in the last stroke")
 
@@ -316,7 +318,7 @@ class StrokeAnalyzer(context: Context, val saveReportCallback: () -> Unit) {
         }
         newFinishValues()
         rower.timeOfLatestFinish = rower.finishWrist?.time ?: System.currentTimeMillis()
-        Log.i(TAG, "Finish wrist time ${rower.finishWrist?.time} rower" + ".timeOfLatestFinish ${rower.timeOfLatestFinish}")
+        Log.i(TAG, "Finish wrist time ${rower.finishWrist?.time} rower.timeOfLatestFinish ${rower.timeOfLatestFinish}")
 
         rower.finishKnee?.let { rower.finishKneeHeights.add(it.y.toFloat()) }
 
@@ -636,6 +638,15 @@ class StrokeAnalyzer(context: Context, val saveReportCallback: () -> Unit) {
         }
 
         return angle
+    }
+
+    /**
+     * Shows a [Toast] on the UI thread.
+     *
+     * @param text The message to show
+     */
+    private fun showToast(text: String) {
+        context.mainExecutor.execute {  Toast.makeText(context, text, Toast.LENGTH_SHORT).show() }
     }
 
     companion object {

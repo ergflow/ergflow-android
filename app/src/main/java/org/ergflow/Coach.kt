@@ -1,7 +1,6 @@
 package org.ergflow
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import com.google.gson.Gson
@@ -19,9 +18,10 @@ import org.ergflow.rubric.ShinAngle
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import org.tensorflow.lite.examples.posenet.lib.KeyPoint
 import java.io.BufferedReader
-import java.io.File
-import java.io.FileOutputStream
 
+/**
+ * Class that watches the rower during the various phases of the stroke and looks for faults.
+ */
 class Coach(val context: Context, val rower: Rower) {
 
     /**
@@ -29,23 +29,26 @@ class Coach(val context: Context, val rower: Rower) {
      * stroke.
      */
     class TargetPosition {
-        var driveSegment: Int? = null
-        var recoverySegment: Int? = null
         var keyPoints = listOf<KeyPoint>()
     }
 
+    /**
+     * Events sent to the fault checker listeners.
+     */
     enum class Event {
         CATCH, DRIVE_UPDATE, FINISH, RECOVERY_UPDATE
     }
 
     val display = Display(this)
 
-    var textToSpeech: TextToSpeech? = null
+    private var textToSpeech: TextToSpeech? = null
     var targetPositions = listOf<TargetPosition>()
 
-    var previousDrivePoints = mutableListOf<Map<BodyPart, Point>>()
-    var previousRecoveryPoints = mutableListOf<Map<BodyPart, Point>>()
+    private var previousDrivePoints = mutableListOf<Map<BodyPart, Point>>()
+    private var previousRecoveryPoints = mutableListOf<Map<BodyPart, Point>>()
     var listeners = mutableListOf<(Event) -> Unit>()
+
+    // Instantiate fault checkers
     val rushing = RushingTheSlide(this)
     val layback = Layback(this)
     val catch = CatchAngle(this)
@@ -64,9 +67,10 @@ class Coach(val context: Context, val rower: Rower) {
         earlyDriveBodyAngle,
         lungingAtCatch,
     )
+
     val report = Report(rower, faultCheckers, context.cacheDir)
-    var timeOfLastCatch = 0L
-    var timeOfLastFinish = 0L
+    private var timeOfLastCatch = 0L
+    private var timeOfLastFinish = 0L
 
     init {
         val json = context.assets.open("targetPositions.json").bufferedReader()
@@ -80,6 +84,9 @@ class Coach(val context: Context, val rower: Rower) {
         }
     }
 
+    /**
+     * This method is called by the stroke analyzer for every pose estimation.
+     */
     fun onUpdate() {
         when (rower.phase) {
             Rower.Phase.CATCH -> {
@@ -107,6 +114,9 @@ class Coach(val context: Context, val rower: Rower) {
         }
     }
 
+    /**
+     * This method is called by the stroke analyzer at the end of the stroke.
+     */
     fun onEndOfStroke() {
         Log.i(TAG, "end of stroke")
         if (rower.isRowing) {
@@ -148,7 +158,7 @@ class Coach(val context: Context, val rower: Rower) {
         }
 
         // Send fixed message and update statuses for fixed faults
-        faultCheckers.filter { it.badConsecutiveStrokes == 0 && it.status in FaultChecker.FAULT_STATES }
+        faultCheckers.filter { it.badConsecutiveStrokes == 0 && it.status != FaultChecker.Status.GOOD }
             .forEach {
                 it.status = FaultChecker.Status.GOOD
                 say(it.getFixedMessage())
@@ -160,7 +170,7 @@ class Coach(val context: Context, val rower: Rower) {
         if (message.length > maxLength) {
             Log.w(
                 TAG,
-                "Message length ${message.length} > TextToSpeech" + ".getMaxSpeechInputLength() $maxLength"
+                "Message length ${message.length} > TextToSpeech.getMaxSpeechInputLength() $maxLength"
             )
         }
         Log.i(TAG, message.take(maxLength))
@@ -192,29 +202,6 @@ class Coach(val context: Context, val rower: Rower) {
         previousDrivePoints.clear()
         previousRecoveryPoints.clear()
         rower.strokeFaults.clear()
-    }
-
-    private fun save(file: File, bitmap: Bitmap) {
-        Log.d(TAG, "saving ${file.absolutePath}")
-        if (file.exists()) file.delete()
-        try {
-            val out = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-            out.flush()
-            out.close()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun save(file: File, lines: List<String>) {
-        Log.d(TAG, "saving ${file.absolutePath}")
-        if (file.exists()) file.delete()
-        file.printWriter().use { out ->
-            lines.forEach {
-                out.println(it)
-            }
-        }
     }
 
     fun saveStats() {

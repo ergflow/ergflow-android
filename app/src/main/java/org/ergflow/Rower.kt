@@ -43,9 +43,9 @@ class Rower {
      */
     val duration: Long get() {
         return startTime?.let {
-            val end = endTime?: System.currentTimeMillis()
+            val end = endTime ?: System.currentTimeMillis()
             return end - it
-        }?: 0
+        } ?: 0
     }
 
     /**
@@ -172,11 +172,6 @@ class Rower {
      * Current shoulder position.
      */
     val currentShoulder get() = currentPoints[BodyPart.LEFT_SHOULDER]
-
-    /**
-     * Current ear position.
-     */
-    val currentEar get() = currentPoints[BodyPart.RIGHT_EAR]
 
     /**
      * Current stroke rate
@@ -358,26 +353,13 @@ class Rower {
     var catchTimePreviousToFinish = 0L
 
     /**
-     * Calculate angle of the line between two body parts.
-     *
-     * @param p1 body part 1
-     * @param p2 body part 2
-     * @return angle in degrees
-     */
-    fun currentAngle(p1: BodyPart, p2: BodyPart): Double {
-        val point1 = currentPoints[p1]!!
-        val point2 = currentPoints[p2]!!
-        return angle(point1, point2)
-    }
-
-    /**
      * Calculate angle of the line between two points.
      *
      * @param p1 point 1
      * @param p2 point 2
      * @return angle in degrees
      */
-    fun angle(p1: Point, p2: Point): Double {
+    private fun angle(p1: Point, p2: Point): Double {
         var angle = Math.toDegrees(atan2(p1.y.toDouble() - p2.y, p1.x.toDouble() - p2.x))
 
         if (angle < 0) {
@@ -406,7 +388,7 @@ class Rower {
      * @param p2 point 2
      * @return distance in pixels
      */
-    fun distance(p1: Point, p2: Point): Double {
+    private fun distance(p1: Point, p2: Point): Double {
         return hypot(p2.x - p1.x.toDouble(), p2.y - p1.y.toDouble())
     }
 
@@ -476,5 +458,6 @@ class Rower {
         finishKneeHeights.list.clear()
         armDeviationPercent = 0
         legDeviationPercent = 0
+        catchTimes.clear()
     }
 }

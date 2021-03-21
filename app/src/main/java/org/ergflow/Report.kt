@@ -1,9 +1,7 @@
 package org.ergflow
 
-import android.content.Intent
 import android.text.format.DateUtils
 import android.util.Log
-import org.ergflow.posenet.PosenetActivity
 import org.ergflow.rubric.BaseFaultChecker
 import org.ergflow.rubric.FaultChecker
 import java.io.File
@@ -12,7 +10,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class Report(val rower: Rower, val faultCheckers: List<BaseFaultChecker>, val cacheDir: File) {
+/**
+ * HTML ErgFlow Report.
+ */
+class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>, private val cacheDir: File) {
 
     var cachedReportPath: String? = null
 
@@ -46,7 +47,7 @@ class Report(val rower: Rower, val faultCheckers: List<BaseFaultChecker>, val ca
         """
     }
 
-    //<editor-fold desc="logo svg">
+    // <editor-fold desc="logo svg">
     private fun logoSvg(): String {
         return """
         <svg class="icon" width="100" height="100" viewBox="0 0 152.4 152.4" version="1.1" 
@@ -173,7 +174,7 @@ class Report(val rower: Rower, val faultCheckers: List<BaseFaultChecker>, val ca
         </svg>
         """
     }
-    //</editor-fold>
+    // </editor-fold>
 
     private fun summary(): String {
         val duration = DateUtils.formatElapsedTime(rower.duration / 1000)
@@ -211,7 +212,6 @@ class Report(val rower: Rower, val faultCheckers: List<BaseFaultChecker>, val ca
                   </tbody>
                 </table>
                 <br/>
-                <h1>Faults</h1>
             </section>
         """
     }
@@ -242,7 +242,7 @@ class Report(val rower: Rower, val faultCheckers: List<BaseFaultChecker>, val ca
     private fun tempReportDir(): File {
         val timeStamp: String =
             SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.getDefault()).format(
-                Date(rower.startTime?: System.currentTimeMillis())
+                Date(rower.startTime ?: System.currentTimeMillis())
             )
         val dir = File(cacheDir, timeStamp)
         dir.mkdirs()
@@ -297,10 +297,11 @@ class Report(val rower: Rower, val faultCheckers: List<BaseFaultChecker>, val ca
         tempReportDir().listFiles()
             ?.filter { !it.endsWith(REPORT_FILE_NAME) }
             ?.forEach {
+                Log.i(TAG, "appending fault ${it.name} with size ${it.length()} to the report")
                 out.print("<section class=\"container\"><br/>")
                 out.print(it.readText())
                 out.print("</table></section>")
-                it.delete()
+                it.deleteOnExit()
             }
     }
 
@@ -314,7 +315,5 @@ class Report(val rower: Rower, val faultCheckers: List<BaseFaultChecker>, val ca
          * Temporary report file name..
          */
         private const val REPORT_FILE_NAME = "ergflow_report.html"
-
-        const val WRITE_REQUEST_CODE = 101
     }
 }

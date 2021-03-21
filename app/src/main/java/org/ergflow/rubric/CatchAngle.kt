@@ -5,17 +5,19 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.text.format.DateUtils
-import android.util.Log
 import org.ergflow.Coach
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import java.io.ByteArrayOutputStream
 import java.util.Base64
 import kotlin.math.cos
 
+/**
+ * Checks for proper forward body angle at the catch.
+ */
 class CatchAngle(coach: Coach) : BaseFaultChecker(coach) {
 
     override val strokeHistoryUnit = "°"
-    var maxAngle = 80
+    private var maxAngle = 80
 
     override val title = "Catch Angle"
     override val description = "Checks for proper forward body angle at the catch."
@@ -114,12 +116,5 @@ class CatchAngle(coach: Coach) : BaseFaultChecker(coach) {
     override fun clear() {
         super.clear()
         maxAngle = 80
-    }
-
-    companion object {
-        /**
-         * Tag for the [Log].
-         */
-        private const val TAG = "CatchAngle"
     }
 }
