@@ -379,7 +379,7 @@ class PosenetActivity :
     private fun openCamera() {
         val permissionCamera =
             context?.checkPermission(Manifest.permission.CAMERA, Process.myPid(), Process.myUid())
-                ?: PackageManager.PERMISSION_GRANTED
+                ?: return
         if (permissionCamera != PackageManager.PERMISSION_GRANTED) {
             requestCameraPermission()
         }
