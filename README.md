@@ -14,7 +14,7 @@ It also creates an HTML report that can be downloaded after the session
 
 ## Demo App
 
-Coming soon. Currently in review
+https://play.google.com/store/apps/details?id=org.ergflow
 
 ## How to use the app
 
