@@ -55,7 +55,7 @@ abstract class BaseFaultChecker(final override val coach: Coach) : FaultChecker 
 
     open fun updateFaultReport(dir: File) {
         val faultReportDescription = faultReportDescription()
-        if (faultReportDescription.isBlank() || numberOfStrokesReported > 10) {
+        if (faultReportDescription.isBlank() || numberOfStrokesReported >= 10) {
             return
         }
         val file = File(dir, "$title.html")
@@ -86,6 +86,7 @@ abstract class BaseFaultChecker(final override val coach: Coach) : FaultChecker 
         initialMessageSent = false
         status = FaultChecker.Status.GOOD
         goodConsecutiveStrokes = 3
+        numberOfStrokesReported = 0
     }
 
     companion object {

@@ -12,7 +12,8 @@ import org.ergflow.Point
 import org.ergflow.Rower
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import java.io.ByteArrayOutputStream
-import java.util.Base64
+import java.util.*
+import kotlin.math.abs
 
 /**
  * Measures the change in body angle during the recovery before the
@@ -26,12 +27,13 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
         "catch. Catch body angle should be established early in the recovery and should not " +
         "change at the catch."
     override val strokeHistoryUnit = "Δ°"
-    private val acceptableDeltaRange = -16.0..16.0
+    private val acceptableDeltaRange = -10.0..10.0
 
     private var preLungeAngle: Double? = null
     private var preLungeBitmap: Bitmap? = null
     private var preLungeHip: Point? = null
     private var preLungeShoulder: Point? = null
+    private var preLungeEar: Point? = null
     private var catchTimeOfBadStroke = 0L
     private var preLungeTimeOfBadStroke = 0L
 
@@ -41,10 +43,11 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
 
     override fun clear() {
         super.clear()
-        preLungeAngle = 0.0
+        preLungeAngle = null
         preLungeBitmap = null
         preLungeHip = null
         preLungeShoulder = null
+        preLungeEar = null
     }
 
     override fun getFaultInitialMessage(): String {
@@ -69,16 +72,30 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
                 preLungeBitmap = rower.currentBitmap
                 preLungeHip = rower.currentHip
                 preLungeShoulder = rower.currentShoulder
+                preLungeEar = rower.currentEar
                 Log.w(TAG, "preLungeAngle $preLungeAngle")
             }
         }
         if (event == Coach.Event.FINISH) {
             // Take the delta between catch angle and current body angle.
             val catchAngle = rower.catchBodyAngle!!
-            val delta = (preLungeAngle?: catchAngle) - catchAngle
+            var delta = (preLungeAngle?: catchAngle) - catchAngle
             Log.w(TAG, "delta $delta")
             preLungeAngle = rower.catchBodyAngle!!
             Log.w(TAG, "finish  preLungeAngle $preLungeAngle")
+
+            if (delta !in acceptableDeltaRange) {
+                // Often the delta is caused by shoulder detection error.
+                // If delta is bad then check hip to ear angle delta.
+                // If hip to ear delta is less than hip to shoulder then use that.
+                if (preLungeHip != null && preLungeEar != null) {
+                    val delta2 = rower.angle(preLungeHip!!, preLungeEar!!) -
+                            rower.angle(rower.catchHip!!, rower.catchEar!!)
+                    if (abs(delta2) < abs(delta)) {
+                        delta = delta2
+                    }
+                }
+            }
 
             strokeHistory.add(delta.toFloat())
 
@@ -89,6 +106,12 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
                 catchTimeOfBadStroke = rower.catchShoulder?.time ?: 0
                 preLungeTimeOfBadStroke = preLungeShoulder?.time ?: 0
             }
+
+            preLungeAngle = 0.0
+            preLungeBitmap = null
+            preLungeHip = null
+            preLungeShoulder = null
+            preLungeEar = null
         }
     }
 

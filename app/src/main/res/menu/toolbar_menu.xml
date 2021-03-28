@@ -9,7 +9,5 @@
         android:title="@string/item_cam_on_right"/>
     <item android:id="@+id/item_cam_on_left"
         android:title="@string/item_cam_on_left"/>
-    <item android:id="@+id/item_save_report"
-        android:title="@string/item_save_report"/>
 
 </menu>

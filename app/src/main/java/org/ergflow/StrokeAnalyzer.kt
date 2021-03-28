@@ -5,20 +5,10 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.util.Log
 import android.widget.Toast
-import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_ANKLE
-import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_ELBOW
-import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_HIP
-import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_KNEE
-import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_SHOULDER
-import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_WRIST
+import org.tensorflow.lite.examples.posenet.lib.BodyPart.*
 import org.tensorflow.lite.examples.posenet.lib.KeyPoint
 import org.tensorflow.lite.examples.posenet.lib.Person
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.max
-import kotlin.math.pow
-import kotlin.math.roundToInt
-import kotlin.math.sqrt
+import kotlin.math.*
 
 /**
  * This class receives posnet Person detection results in realtime. It analyzes the detected
@@ -76,12 +66,9 @@ class StrokeAnalyzer(private val context: Context) {
                 Point(keyPoint.position.x, keyPoint.position.y, time)
         }
 
-        val isUsable = analyze()
-        if (!isUsable) return
+        analyze()
+        addFrame(bitmap, time)
 
-        if (rower.isRowing) {
-            addFrame(bitmap, time)
-        }
     }
 
     fun updateDisplay(
@@ -140,13 +127,13 @@ class StrokeAnalyzer(private val context: Context) {
 
             // signal pause by hand above the head (wrist above shoulder)
             if (rower.currentWrist!!.y < rower.currentShoulder!!.y - 10) {
-                if (rower.isRowing && ++handUpFrameCount > 5) {
+                if (rower.isRowing && ++handUpFrameCount > 15) {
                     if (rower.isRowing) {
                         Log.w(TAG, "Pause")
                         rower.isRowing = false
                         return false
                     }
-                } else if (++handUpFrameCount > 30) {
+                } else if (++handUpFrameCount > 150) {
                     Log.w(TAG, "reset")
                     showToast("Resetting session")
                     coach.saveStats()
@@ -155,6 +142,8 @@ class StrokeAnalyzer(private val context: Context) {
                     reset()
                     return false
                 }
+            } else {
+                handUpFrameCount = 0
             }
 
             val prevStrokePosPct = rower.catchFinishPct
@@ -184,17 +173,20 @@ class StrokeAnalyzer(private val context: Context) {
 
                 // -ve stroke position % is likely a bad value
                 prevStrokePosPct < 0 -> {
+                    Log.i(TAG, "$prevStrokePosPct stroke position % is likely a bad value")
                     return false
                 }
 
-                // When at top of slice and stroke % is increasing
+                // When at top of slide and stroke % is increasing
                 prevStrokePosPct < 20 && prevStrokePosPct < rower.catchFinishPct -> {
-                    handUpFrameCount = 0
 
                     // Previous phase was recovery and now stroke position is increasing so must be
                     // at the catch
                     if (rower.phase == Rower.Phase.RECOVERY) {
-                        if (!catch()) return false
+                        if (!catch()) {
+                            Log.i(TAG, "Unable to process catch")
+                            return false
+                        }
                     } else {
                         if (rower.isRowing && now - rower.catchTimePreviousToFinish > 9000) {
                             Log.w(
@@ -264,6 +256,11 @@ class StrokeAnalyzer(private val context: Context) {
                 rower.slideRatio = rower.driveMs / recoveryMs.toFloat()
             }
         }
+        rower.strokeRate?.let {
+            if (rower.startTime == null && it > 15) {
+                rower.startTime = rower.catchTimes[rower.strokeCount - 1] ?: now
+            }
+        }
         rower.strokeCount++
 
         Log.i(TAG, "Catch!! strokePosPct=${rower.catchFinishPct}")
@@ -295,9 +292,6 @@ class StrokeAnalyzer(private val context: Context) {
         } else {
             if (consecutiveValidStrokes > 2) {
                 rower.isRowing = true
-                if (rower.startTime == null) {
-                    rower.startTime = rower.catchShoulder?.time ?: now
-                }
                 rower.endTime = null
             }
         }
@@ -348,6 +342,9 @@ class StrokeAnalyzer(private val context: Context) {
                 }
                 getPoint(LEFT_HIP)?.apply {
                     rower.catchHip = Point(position.x, position.y, catch.time)
+                }
+                getPoint(LEFT_EAR)?.apply {
+                    rower.catchEar = Point(position.x, position.y, catch.time)
                 }
                 rower.catchBodyAngle = getAngle(rower.catchHip, rower.catchShoulder)
                 Log.d(
@@ -451,13 +448,18 @@ class StrokeAnalyzer(private val context: Context) {
             strokePosPct = rower.catchFinishPct
             bodyAngle = rower.currentBodyAngle ?: 0.0
         }
+        Log.d(TAG, "adding frame at ${frame.time}")
         rower.frames.add(frame)
 
-        rower.frames.removeAll(
-            rower.frames.filter {
-                System.currentTimeMillis() - it.time > frameShelfLife
-            }
-        )
+        val expired = rower.frames.filter {
+            System.currentTimeMillis() - it.time > frameShelfLife
+        }
+        if (expired.isNotEmpty()) {
+            Log.d(TAG, "removing ${expired.size} expired frames " +
+                    "starting with frame at ${expired.first().time} and " +
+                    "ending at ${expired.last().time}")
+        }
+        rower.frames.removeAll(expired)
     }
 
     /**

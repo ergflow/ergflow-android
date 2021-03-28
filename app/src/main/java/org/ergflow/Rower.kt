@@ -1,6 +1,7 @@
 package org.ergflow
 
 import android.graphics.Bitmap
+import android.util.Log
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import org.tensorflow.lite.examples.posenet.lib.KeyPoint
 import kotlin.math.atan2
@@ -95,6 +96,11 @@ class Rower {
     var catchHip: Point? = null
 
     /**
+     * Position of ear at the last catch.
+     */
+    var catchEar: Point? = null
+
+    /**
      * Hard coded position of ankle.
      */
     var fixedAnkle = Point(82, 167, 0)
@@ -172,6 +178,11 @@ class Rower {
      * Current shoulder position.
      */
     val currentShoulder get() = currentPoints[BodyPart.LEFT_SHOULDER]
+
+    /**
+     * Current shoulder position.
+     */
+    val currentEar get() = currentPoints[BodyPart.LEFT_EAR]
 
     /**
      * Current stroke rate
@@ -359,7 +370,7 @@ class Rower {
      * @param p2 point 2
      * @return angle in degrees
      */
-    private fun angle(p1: Point, p2: Point): Double {
+    fun angle(p1: Point, p2: Point): Double {
         var angle = Math.toDegrees(atan2(p1.y.toDouble() - p2.y, p1.x.toDouble() - p2.x))
 
         if (angle < 0) {
@@ -410,6 +421,7 @@ class Rower {
      * Clear all values.
      */
     fun reset() {
+        Log.i(TAG, "${System.currentTimeMillis()} Resetting rower")
         isRowing = false
         startTime = null
         endTime = null
@@ -419,6 +431,7 @@ class Rower {
         catchWrist = null
         catchElbow = null
         catchHip = null
+        catchEar = null
         catchKnee = null
         catchShoulder = null
         finishWrist = null
@@ -426,9 +439,6 @@ class Rower {
         finishHip = null
         finishKnee = null
         finishShoulder = null
-        frames.forEach {
-            it.bitmap?.recycle()
-        }
         frames.clear()
         currentBitmap = null
         strokeRate = null
@@ -459,5 +469,12 @@ class Rower {
         armDeviationPercent = 0
         legDeviationPercent = 0
         catchTimes.clear()
+    }
+
+    companion object {
+        /**
+         * Tag for the [Log].
+         */
+        private const val TAG = "Rower"
     }
 }

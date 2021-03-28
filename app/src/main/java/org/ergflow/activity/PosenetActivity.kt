@@ -6,21 +6,8 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.ImageFormat
-import android.graphics.Matrix
-import android.graphics.Paint
-import android.graphics.PixelFormat
-import android.graphics.PorterDuff
-import android.graphics.Rect
-import android.hardware.camera2.CameraAccessException
-import android.hardware.camera2.CameraCaptureSession
-import android.hardware.camera2.CameraCharacteristics
-import android.hardware.camera2.CameraDevice
-import android.hardware.camera2.CameraManager
-import android.hardware.camera2.CaptureRequest
+import android.graphics.*
+import android.hardware.camera2.*
 import android.hardware.camera2.params.OutputConfiguration
 import android.hardware.camera2.params.SessionConfiguration
 import android.media.Image
@@ -33,13 +20,7 @@ import android.os.Process
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.Surface
-import android.view.SurfaceHolder
-import android.view.SurfaceView
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.DialogFragment
@@ -51,8 +32,7 @@ import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import org.tensorflow.lite.examples.posenet.lib.Person
 import org.tensorflow.lite.examples.posenet.lib.Posenet
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
@@ -208,17 +188,14 @@ class PosenetActivity :
             R.id.item_cam_on_right -> {
                 cameraOnRight = true
             }
-            R.id.item_save_report -> {
-                saveReport()
-            }
             else -> {
             }
         }
     }
 
     private fun saveReport() {
-        strokeAnalyzer?.rower?.duration?.let {
-            if (it < 15_000) {
+        strokeAnalyzer?.rower?.averageStrokeRate?.let {
+            if (it < 1) {
                 showToast("No session to report on")
                 return
             }
@@ -265,6 +242,10 @@ class PosenetActivity :
         binding.listView.adapter = itemArrayAdater
         binding.listView.onRestoreInstanceState(state)
         binding.listView.isNestedScrollingEnabled = true
+        binding.reportButton.visibility = View.INVISIBLE
+        binding.reportButton.setOnClickListener {
+            saveReport()
+        }
     }
 
     override fun onResume() {
@@ -281,14 +262,20 @@ class PosenetActivity :
     }
 
     override fun onPause() {
+        strokeAnalyzer?.rower?.strokeCount?.let {
+            if (it > 5) {
+                saveReport()
+            }
+        }
         closeCamera()
         stopBackgroundThread()
         super.onPause()
     }
 
+
     override fun onDestroy() {
-        strokeAnalyzer?.rower?.duration?.let {
-            if (it > 15_000) {
+        strokeAnalyzer?.rower?.strokeCount?.let {
+            if (it > 5) {
                 saveReport()
             }
         }
@@ -505,6 +492,18 @@ class PosenetActivity :
 
             processImage(imageBitmap)
             imageBitmap.recycle()
+            strokeAnalyzer?.rower?.strokeCount?.also {
+                if (it > 3 && binding.reportButton.visibility != View.VISIBLE) {
+                    context?.mainExecutor?.execute {
+                        binding.reportButton.visibility = View.VISIBLE
+                    }
+                }
+                if (it == 0 && binding.reportButton.visibility != View.INVISIBLE) {
+                    context?.mainExecutor?.execute {
+                        binding.reportButton.visibility = View.INVISIBLE
+                    }
+                }
+            }
         }
     }
 

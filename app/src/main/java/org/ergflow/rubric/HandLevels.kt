@@ -8,7 +8,7 @@ import android.text.format.DateUtils
 import android.util.Log
 import org.ergflow.Coach
 import java.io.ByteArrayOutputStream
-import java.util.Base64
+import java.util.*
 import kotlin.math.cos
 import kotlin.math.max
 
@@ -31,6 +31,7 @@ class HandLevels(coach: Coach) : BaseFaultChecker(coach) {
     private var topY: Float? = null
     private var bottomY: Float? = null
     private var currentDelta = 0f
+    private var previousCatchTime = 0L
     private var catchTimeOfBadStroke = 0L
 
     // Frames with worst hand levels in buckets by strokePct
@@ -76,16 +77,17 @@ class HandLevels(coach: Coach) : BaseFaultChecker(coach) {
                 // Top is around nipple height measured as 80% of body length at layback where
                 // layback is 20 degrees past vertical
                 topY = yHip - 0.8f * bodyLength * cos(0.35).toFloat()
-                bottomY = 130f
+                bottomY = 125f
 
                 strokeHistory.add(currentDelta)
                 if (currentDelta <= allowedMaxDeviation) {
                     goodStroke()
                 } else {
                     badStroke()
-                    catchTimeOfBadStroke = rower.catchShoulder?.time ?: 0
+                    catchTimeOfBadStroke = previousCatchTime
                 }
                 currentDelta = 0f
+                previousCatchTime = rower.catchShoulder?.time ?: 0
             }
 
             else -> {

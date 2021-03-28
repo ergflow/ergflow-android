@@ -25,6 +25,7 @@ class Display(val coach: Coach) {
     private val warnColor = coach.context.resources.getColor(R.color.dracula_yellow, null)
     private val goodColor = coach.context.resources.getColor(R.color.dracula_green, null)
     private val titleRowColor = coach.context.resources.getColor(R.color.dracula_selection, null)
+    private var displayIntro = true
 
     val yellow = Paint().apply {
         color = Color.YELLOW
@@ -134,11 +135,31 @@ class Display(val coach: Coach) {
         // Not a typo. Need to use height here otherwise points don't line up
         canvas!!.height.toFloat() / MODEL_WIDTH
 
-    private var row = 0
 
     fun showRowerStats() {
 
-        row = 0
+        if (rower.strokeCount == 0) {
+            if (!displayIntro) {
+                clearListItems()
+                displayIntro = true
+            }
+            drawListItem("line 1",
+                "Use option menu to change camera position if needed.", "", "↑  ", null)
+            drawListItem("line 2", " ", " ", " ", null)
+            drawListItem("line 3", " ", " ", " ", null)
+            drawListItem("line 4", " ", " ", " ", null)
+            drawListItem("line 5", " ", " ", " ", null)
+            drawListItem("line 6", " ", " ", " ", null)
+            drawListItem("line 7", " ", " ", " ", null)
+            drawListItem("line 8", " ", " ", " ", null)
+            drawListItem("line 9",
+                "← Line up ghost image with rowing machine and then start rowing.", "", "", null)
+            return
+        }
+        if (displayIntro) {
+            clearListItems()
+            displayIntro = false
+        }
         if (rower.isRowing) {
             val time = DateUtils.formatElapsedTime(rower.duration / 1000)
             var spm = ""
@@ -195,6 +216,12 @@ class Display(val coach: Coach) {
     ) {
         coach.context.mainExecutor.execute {
             itemArrayAdapter?.addOrUpdate(Item(key, left, middle, right, textColor, null))
+        }
+    }
+
+    private fun clearListItems() {
+        coach.context.mainExecutor.execute {
+            itemArrayAdapter?.clearItems()
         }
     }
 

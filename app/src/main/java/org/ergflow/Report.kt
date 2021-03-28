@@ -7,8 +7,7 @@ import org.ergflow.rubric.FaultChecker
 import java.io.File
 import java.io.PrintWriter
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 /**
  * HTML ErgFlow Report.
@@ -26,6 +25,14 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
+        <style>
+            .good {
+                color: green;
+            }
+            .bad {
+                color: red;
+            }
+        </style>
         </head><body>
             <section class="container" id="header">
                 <header class="Header">
@@ -202,8 +209,8 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
                       <th>Test</th>
                       <th>Description</th>
                       <th>Percent Good</th>
-                      <th>Good Strokes</th>
                       <th>Bad Strokes</th>
+                      <th>Good Strokes</th>
                       <th>Average Value</th>
                     </tr>
                   </thead>
@@ -225,9 +232,11 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
                   <td>${f.title}</td>
                   <td>${f.description}</td>
                   <td>${mark.percent}%</td>
-                  <td>${mark.goodStrokes}</td>
-                  <td>${mark.totalStrokes - mark.goodStrokes}</td>
-                  <td>${String.format("%.1f", f.strokeHistory.average())}${f.strokeHistoryUnit}</td>
+                  <td class="bad">${mark.totalStrokes - mark.goodStrokes}</td>
+                  <td class="good">${mark.goodStrokes}</td>
+                  <td>${String.format("%.1f", 
+                          if (f.strokeHistory.isNotEmpty()) f.strokeHistory.average() else 0f)
+                        }${f.strokeHistoryUnit}</td>
                 </tr>
             """
         }
@@ -273,7 +282,7 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
      */
     fun generateReport() {
 
-        if (rower.duration < 15) {
+        if (rower.duration < 1) {
             Log.w(TAG, "Not saving report. Duration was only ${rower.duration} ms. ")
             return
         }
@@ -291,6 +300,7 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
             appendFaultFragments(out)
             out.print("</body></html>")
         }
+        rower.reset()
     }
 
     private fun appendFaultFragments(out: PrintWriter) {

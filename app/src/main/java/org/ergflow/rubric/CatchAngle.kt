@@ -5,10 +5,11 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.text.format.DateUtils
+import android.util.Log
 import org.ergflow.Coach
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import java.io.ByteArrayOutputStream
-import java.util.Base64
+import java.util.*
 import kotlin.math.cos
 
 /**
@@ -80,7 +81,13 @@ class CatchAngle(coach: Coach) : BaseFaultChecker(coach) {
     override fun faultReportImageRow(): String {
         val out = ByteArrayOutputStream()
         val frame = rower.frames.find { it.time == catchTimeOfBadStroke }
-        val copy = frame?.bitmap?.copy(frame.bitmap.config, true) ?: return ""
+        if (frame == null) {
+            Log.w(TAG, "catch frame with time $catchTimeOfBadStroke not found")
+            Log.w(TAG, "time $catchTimeOfBadStroke was " +
+                    "${System.currentTimeMillis() - catchTimeOfBadStroke} ms ago")
+            return ""
+        }
+        val copy = frame.bitmap?.copy(frame.bitmap.config, true) ?: return ""
         val canvas = Canvas(copy)
         coach.display.drawLines(canvas, frame.points)
         val bodyLength = rower.averageBodyLength ?: 0f
@@ -116,5 +123,12 @@ class CatchAngle(coach: Coach) : BaseFaultChecker(coach) {
     override fun clear() {
         super.clear()
         maxAngle = 80
+    }
+
+    companion object {
+        /**
+         * Tag for the [Log].
+         */
+        private const val TAG = "CatchAngle"
     }
 }

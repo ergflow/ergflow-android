@@ -8,11 +8,9 @@ import org.ergflow.Coach
 import org.ergflow.Frame
 import org.ergflow.Rower
 import org.ergflow.Stats
-import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_HIP
-import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_KNEE
-import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_WRIST
+import org.tensorflow.lite.examples.posenet.lib.BodyPart.*
 import java.io.ByteArrayOutputStream
-import java.util.Base64
+import java.util.*
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -161,6 +159,8 @@ class HandsOut(coach: Coach) : BaseFaultChecker(coach) {
         super.clear()
         kneeDeltaBeforeHandsPass = null
         midThighX = 250
+        badFinishTimestamp = 0
+        badHandsMidThighTimestamp = 0
     }
 
     override fun faultReportDescription(): String {

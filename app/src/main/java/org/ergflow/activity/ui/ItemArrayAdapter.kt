@@ -43,6 +43,10 @@ class ItemArrayAdapter(context: Context?, textViewResourceId: Int) :
         }
     }
 
+    fun clearItems() {
+        items.clear()
+    }
+
     override fun add(item: Item?) {
         if (item != null) {
             items[item.key] = item

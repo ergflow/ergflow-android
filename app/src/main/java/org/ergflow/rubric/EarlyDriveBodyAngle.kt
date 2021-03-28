@@ -12,7 +12,8 @@ import org.ergflow.Point
 import org.ergflow.Rower
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import java.io.ByteArrayOutputStream
-import java.util.Base64
+import java.util.*
+import kotlin.math.abs
 
 /**
  * Looks for opening up too early or shooting the slide faults by measuring the change in body
@@ -24,12 +25,13 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
     override val description = "Looks for opening up too early or shooting the slide faults by " +
         "measuring the change in body angle during the early drive."
     override val strokeHistoryUnit = "Δ°"
-    private val acceptableDeltaRange = -5.0..17.0
+    private val acceptableDeltaRange = -5.0..10.0
 
     private var preOpenAngle = 0.0
     private var preOpenBitmap: Bitmap? = null
     private var preOpenHip: Point? = null
     private var preOpenShoulder: Point? = null
+    private var preOpenEar: Point? = null
     private var catchTimeOfBadStroke = 0L
     private var preOpenTimeOfBadStroke = 0L
 
@@ -43,6 +45,9 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
         preOpenBitmap = null
         preOpenHip = null
         preOpenShoulder = null
+        preOpenEar = null
+        catchTimeOfBadStroke = 0
+        preOpenTimeOfBadStroke = 0
     }
 
     override fun getFaultInitialMessage(): String {
@@ -58,19 +63,23 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
     }
 
     override fun onEvent(event: Coach.Event) {
+        if (rower.strokeCount == 0) {
+            clear()
+        }
         if (event == Coach.Event.DRIVE_UPDATE) {
-            if (rower.currentBodyAngle != null && rower.catchFinishPct < 30) {
+            if (rower.currentBodyAngle != null && rower.catchFinishPct < 40) {
                 // Top of slide where hands should move with seat and body angle stays the same
                 preOpenAngle = rower.currentBodyAngle!!
                 preOpenBitmap = rower.currentBitmap
                 preOpenHip = rower.currentHip
                 preOpenShoulder = rower.currentShoulder
+                preOpenEar = rower.currentEar
                 Log.w(TAG, "preOpenAngle $preOpenAngle")
             }
         }
         if (event == Coach.Event.FINISH) {
             // Take the delta between catch angle and current body angle.
-            val delta = preOpenAngle - rower.catchBodyAngle!!
+            var delta = if (preOpenAngle == 0.0) 0.0 else preOpenAngle - rower.catchBodyAngle!!
             Log.w(TAG, "delta $delta")
             preOpenAngle = rower.catchBodyAngle!!
             Log.w(TAG, "finish  preOpenAngle $preOpenAngle")
@@ -78,15 +87,35 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
             if (rower.strokeCount < 2) {
                 return
             }
+
+            if (delta !in acceptableDeltaRange) {
+                // Often the delta is caused by shoulder detection error.
+                // If delta is bad then check hip to ear angle delta.
+                // If hip to ear delta is less than hip to shoulder then use that.
+                if (preOpenHip != null && preOpenEar != null) {
+                    val delta2 = rower.angle(preOpenHip!!, preOpenEar!!) -
+                            rower.angle(rower.catchHip!!, rower.catchEar!!)
+                    if (abs(delta2) < abs(delta)) {
+                        delta = delta2
+                    }
+                }
+            }
+
             strokeHistory.add(delta.toFloat())
 
             if (delta in acceptableDeltaRange) {
                 goodStroke()
             } else {
+
                 badStroke()
                 catchTimeOfBadStroke = rower.catchShoulder?.time ?: 0
                 preOpenTimeOfBadStroke = preOpenShoulder?.time ?: 0
             }
+            preOpenAngle = 0.0
+            preOpenBitmap = null
+            preOpenHip = null
+            preOpenShoulder = null
+            preOpenEar = null
         }
     }
 
@@ -127,7 +156,7 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
             hip.y.toFloat(),
             coach.display.smallYellow,
         )
-        if (frame.strokePosPct < 30 && frame.phase != Rower.Phase.RECOVERY) {
+        if (frame.strokePosPct < 45 && frame.phase != Rower.Phase.RECOVERY) {
             val catchDeltax = hip.x - catchHip.x
             canvas.drawLine(
                 (catchShoulder.x + catchDeltax).toFloat(),
@@ -155,6 +184,8 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
         val catch = rower.frames.find { it.time == catchTimeOfBadStroke }
         if (catch == null) {
             Log.w(TAG, "catch frame with time $catchTimeOfBadStroke not found")
+            Log.w(TAG, "time $catchTimeOfBadStroke was " +
+                    "${System.currentTimeMillis() - catchTimeOfBadStroke} ms ago")
             return ""
         }
         val preOpen = rower.frames.find { it.time == preOpenTimeOfBadStroke }
