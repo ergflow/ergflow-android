@@ -53,8 +53,7 @@ https://play.google.com/store/apps/details?id=org.ergflow
 
 * Try to keep your stroke rate in the low 20s to help with accuracy. 
 * You can row for as long as you want but it only takes a couple of minutes to have enough strokes to detect faults in technique.
-* To generate the report, tap the three dots and select "Generate Report".
-* The report will only show images for the first 10 faults detected for each category,
+* The report will show images for the first 10 faults detected for each category,
 * If you want to reset your session while on the erg you can raise your camera facing hand above your head for a few seconds to reset.
 
 ### Troubleshooting
