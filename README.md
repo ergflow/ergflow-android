@@ -4,13 +4,13 @@ ErgFlow is a coaching tool for rowers. It uses the phone's camera and computer v
 
 It uses TensorFlow's [PoseNet](https://github.com/tensorflow/examples/tree/master/lite/examples/posenet/android) model for realtime human pose estimation. The detected poses are used to analyze the position of the rower's wrist, shoulder, hip, knee, and ankle throughout the stroke and check for common faults that can result in an inefficient rowing stroke.
 
-![screenshot](images/screenshot.jpg)
+![screenshot](images/phone_screenshot.jpg)
 
 If you have a way to cast your phone to a large screen using something like Chromecast then it is easier to get feedback while rowing.
 ![demo gif](images/ergflow_demo.gif)
 It also creates an HTML report that can be downloaded after the session
 
-[sample report](SampleReport.html)
+[sample report](https://ergflow.github.io/samples/SampleReport.html)
 
 ## Demo App
 
