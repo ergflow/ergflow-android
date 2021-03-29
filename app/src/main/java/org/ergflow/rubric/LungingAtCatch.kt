@@ -27,7 +27,7 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
         "catch. Catch body angle should be established early in the recovery and should not " +
         "change at the catch."
     override val strokeHistoryUnit = "Δ°"
-    private val acceptableDeltaRange = -10.0..10.0
+    private val acceptableDeltaRange = -10.0..15.0
 
     private var preLungeAngle: Double? = null
     private var preLungeBitmap: Bitmap? = null

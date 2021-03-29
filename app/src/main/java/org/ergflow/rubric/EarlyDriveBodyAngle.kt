@@ -25,7 +25,7 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
     override val description = "Looks for opening up too early or shooting the slide faults by " +
         "measuring the change in body angle during the early drive."
     override val strokeHistoryUnit = "Δ°"
-    private val acceptableDeltaRange = -5.0..10.0
+    private val acceptableDeltaRange = -5.0..16.0
 
     private var preOpenAngle = 0.0
     private var preOpenBitmap: Bitmap? = null
@@ -51,11 +51,11 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
     }
 
     override fun getFaultInitialMessage(): String {
-        return "You are opening up too early. Push with the legs at the catch don't pull with the arms. Maintain your catch angle until your hands pass your shins"
+        return "You are opening up too early. Push with the legs at the catch. Maintain your catch angle until your hands pass your shins"
     }
 
     override fun getFaultReminderMessage(): String {
-        return "Focus on maintaining your catch angle during the early drive. Hands and seat should move in unison until hands pass the shins"
+        return "You are still opening up too early. Focus on holding your forward body angle during the early drive until your hands pass the shins"
     }
 
     override fun getFixedMessage(): String {
