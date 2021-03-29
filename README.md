@@ -7,8 +7,11 @@ It uses TensorFlow's [PoseNet](https://github.com/tensorflow/examples/tree/maste
 ![screenshot](images/phone_screenshot.jpg)
 
 If you have a way to cast your phone to a large screen using something like Chromecast then it is easier to get feedback while rowing.
+If you have sound on then a voice will coach you if it detects three faults in a row.
+
 ![demo gif](images/ergflow_demo.gif)
-It also creates an HTML report that can be downloaded after the session
+
+It also creates an HTML report that can be downloaded after the session.
 
 [sample report](https://ergflow.github.io/samples/SampleReport.html)
 
