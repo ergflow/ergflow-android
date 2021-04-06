@@ -39,8 +39,8 @@ class TestActivity : AppCompatActivity() {
         setContentView(view)
 
         val sampleImageView = binding.image
-        val drawedImage = ResourcesCompat.getDrawable(resources, R.drawable.murray, null)
-        val imageBitmap = drawableToBitmap(drawedImage!!)
+        val drawnImage = ResourcesCompat.getDrawable(resources, R.drawable.murray, null)
+        val imageBitmap = drawableToBitmap(drawnImage!!)
         sampleImageView.setImageBitmap(imageBitmap)
         val posenet = Posenet(this.applicationContext)
         val person = posenet.estimateSinglePose(imageBitmap)
@@ -66,7 +66,7 @@ class TestActivity : AppCompatActivity() {
             }
         }
 
-        val itemArrayAdater = ItemArrayAdapter(applicationContext, R.layout.ef_item_layout)
+        val itemArrayAdapter = ItemArrayAdapter(applicationContext, R.layout.ef_item_layout)
         val strokeAnalyzer = StrokeAnalyzer(this.applicationContext)
         strokeAnalyzer.analyzeFrame(person, mutableBitmap)
         strokeAnalyzer.updateDisplay(canvas)
@@ -80,10 +80,10 @@ class TestActivity : AppCompatActivity() {
         sampleImageView.setImageBitmap(mutableBitmap)
 
         val state = binding.listView.onSaveInstanceState()
-        binding.listView.adapter = itemArrayAdater
+        binding.listView.adapter = itemArrayAdapter
         binding.listView.onRestoreInstanceState(state)
 
-        itemArrayAdater.addOrUpdate(
+        itemArrayAdapter.addOrUpdate(
             Item(
                 "a",
                 "This is a very long item with lots and lots of text in it. Not sure if it will wrap around!",
@@ -93,7 +93,7 @@ class TestActivity : AppCompatActivity() {
                 null
             )
         )
-        itemArrayAdater.addOrUpdate(
+        itemArrayAdapter.addOrUpdate(
             Item(
                 "b",
                 "asdfasf",
@@ -103,8 +103,8 @@ class TestActivity : AppCompatActivity() {
                 null
             )
         ) // orange
-        itemArrayAdater.addOrUpdate(Item("c", "dup", "asdfsqwrqrdf", "456", null, null))
-        itemArrayAdater.addOrUpdate(
+        itemArrayAdapter.addOrUpdate(Item("c", "dup", "asdfsqwrqrdf", "456", null, null))
+        itemArrayAdapter.addOrUpdate(
             Item(
                 "c",
                 "xczvx",
@@ -114,7 +114,7 @@ class TestActivity : AppCompatActivity() {
                 null
             )
         ) // red
-        itemArrayAdater.addOrUpdate(
+        itemArrayAdapter.addOrUpdate(
             Item(
                 "e",
                 "zbvbcv",

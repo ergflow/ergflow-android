@@ -77,7 +77,9 @@ class WebViewActivity : Activity() {
         setContentView(webView)
         val settings = webView.settings
         settings.allowFileAccess = true
+        @Suppress("DEPRECATION")
         settings.allowFileAccessFromFileURLs = true
+        @Suppress("DEPRECATION")
         settings.allowUniversalAccessFromFileURLs = true
         settings.builtInZoomControls = true
         settings.displayZoomControls = false

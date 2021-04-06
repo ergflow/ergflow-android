@@ -69,7 +69,7 @@ private const val PREVIEW_HEIGHT = 480
 
 /**
  * This activity ties everything together. It uses the camera to capture images, passes them to
- * Posent for pose estimations, sends the results to the StrokeAnalyzer, and coordinates reporting.
+ * Posenet for pose estimations, sends the results to the StrokeAnalyzer, and coordinates reporting.
  */
 class PosenetActivity :
     Fragment(),
@@ -154,7 +154,7 @@ class PosenetActivity :
 
     private var strokeAnalyzer: StrokeAnalyzer? = null
 
-    private var itemArrayAdater: ItemArrayAdapter? = null
+    private var itemArrayAdapter: ItemArrayAdapter? = null
 
     /** [CameraDevice.StateCallback] is called when [CameraDevice] changes its state.   */
     private val stateCallback = object : CameraDevice.StateCallback() {
@@ -259,9 +259,9 @@ class PosenetActivity :
         surfaceView!!.setZOrderOnTop(true)
         surfaceHolder = surfaceView!!.holder
         surfaceHolder?.setFormat(PixelFormat.TRANSLUCENT)
-        itemArrayAdater = ItemArrayAdapter(context, R.layout.ef_item_layout)
+        itemArrayAdapter = ItemArrayAdapter(context, R.layout.ef_item_layout)
         val state = binding.listView.onSaveInstanceState()
-        binding.listView.adapter = itemArrayAdater
+        binding.listView.adapter = itemArrayAdapter
         binding.listView.onRestoreInstanceState(state)
         binding.listView.isNestedScrollingEnabled = true
         binding.reportButton.visibility = View.INVISIBLE
@@ -280,7 +280,7 @@ class PosenetActivity :
         openCamera()
         posenet = Posenet(this.context!!)
         strokeAnalyzer = StrokeAnalyzer(this.context!!)
-        strokeAnalyzer!!.display.itemArrayAdapter = itemArrayAdater
+        strokeAnalyzer!!.display.itemArrayAdapter = itemArrayAdapter
     }
 
     override fun onPause() {

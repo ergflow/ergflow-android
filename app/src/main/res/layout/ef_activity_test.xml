@@ -16,7 +16,6 @@
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:theme="@style/AppTheme.Posenet"
-    android:background="@color/dracula_background"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:gravity="center"

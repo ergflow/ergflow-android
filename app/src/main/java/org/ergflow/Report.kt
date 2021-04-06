@@ -14,7 +14,7 @@ import java.util.Locale
 /**
  * HTML ErgFlow Report.
  */
-class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>, private val context: Context) {
+class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>, context: Context) {
 
     private val cacheDir = context.cacheDir
     var cachedReportPath: String? = null

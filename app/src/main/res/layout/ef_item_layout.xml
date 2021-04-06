@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:theme="@style/AppTheme.Posenet"
     android:layout_height="wrap_content">
@@ -29,6 +30,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:layout_marginEnd="10dp"
-        android:textColor="@color/dracula_foreground"/>
+        android:textColor="@color/dracula_foreground"
+        tools:ignore="RelativeOverlap" />
 
 </RelativeLayout>

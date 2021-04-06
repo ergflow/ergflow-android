@@ -79,20 +79,19 @@ class Posenet(
     private val device: Device = Device.NNAPI
 ) : AutoCloseable {
     private var lastInferenceTimeNanos: Long = -1
-        private set
 
     /** An Interpreter for the TFLite model.   */
     private var interpreter: Interpreter? = null
     private var gpuDelegate: GpuDelegate? = null
     private var nnApiDelegate: NnApiDelegate? = null
-    private val NUM_LITE_THREADS = 4
+    private val numLiteThreads = 4
 
     private fun getInterpreter(): Interpreter {
         if (interpreter != null) {
             return interpreter!!
         }
         val options = Interpreter.Options()
-        options.setNumThreads(NUM_LITE_THREADS)
+        options.setNumThreads(numLiteThreads)
         when (device) {
             Device.CPU -> { }
             Device.GPU -> {

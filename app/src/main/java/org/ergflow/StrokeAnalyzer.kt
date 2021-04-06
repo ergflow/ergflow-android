@@ -21,11 +21,11 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 /**
- * This class receives posnet Person detection results in realtime. It analyzes the detected
+ * This class receives posenet Person detection results in realtime. It analyzes the detected
  * points and updates the Rower class and notifies the Coach class.
  * It also updates the display to show current rowing stats and
  */
-class StrokeAnalyzer(private val context: Context) {
+class StrokeAnalyzer(context: Context) {
 
     val rower = Rower()
     val coach = Coach(context, rower)
