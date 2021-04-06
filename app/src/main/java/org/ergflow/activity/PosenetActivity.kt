@@ -6,8 +6,21 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.*
-import android.hardware.camera2.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.ImageFormat
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.PixelFormat
+import android.graphics.PorterDuff
+import android.graphics.Rect
+import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraDevice
+import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.params.OutputConfiguration
 import android.hardware.camera2.params.SessionConfiguration
 import android.media.Image
@@ -17,10 +30,17 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Process
+import android.print.WebViewActivity
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
-import android.view.*
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.Surface
+import android.view.SurfaceHolder
+import android.view.SurfaceView
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.DialogFragment
@@ -32,7 +52,8 @@ import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import org.tensorflow.lite.examples.posenet.lib.Person
 import org.tensorflow.lite.examples.posenet.lib.Posenet
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.Executors
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
@@ -207,6 +228,7 @@ class PosenetActivity :
                 showToast("Nothing to save yet")
                 return
             }
+
             val intent = Intent(context, WebViewActivity::class.java).apply {
                 putExtra(WEBVIEW_URL, cachedReportPath)
                 val timeStamp: String = report.rower.let {
@@ -271,7 +293,6 @@ class PosenetActivity :
         stopBackgroundThread()
         super.onPause()
     }
-
 
     override fun onDestroy() {
         strokeAnalyzer?.rower?.strokeCount?.let {

@@ -4,6 +4,9 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.text.format.DateUtils
+import android.widget.Toast
+import android.widget.Toast.LENGTH_LONG
+import android.widget.Toast.LENGTH_SHORT
 import androidx.core.content.res.ResourcesCompat
 import org.ergflow.activity.MODEL_HEIGHT
 import org.ergflow.activity.MODEL_WIDTH
@@ -21,10 +24,11 @@ import kotlin.math.roundToInt
  */
 class Display(val coach: Coach) {
 
-    private val errorColor = coach.context.resources.getColor(R.color.dracula_red, null)
-    private val warnColor = coach.context.resources.getColor(R.color.dracula_yellow, null)
-    private val goodColor = coach.context.resources.getColor(R.color.dracula_green, null)
-    private val titleRowColor = coach.context.resources.getColor(R.color.dracula_selection, null)
+    private val context = coach.context
+    private val errorColor = context.resources.getColor(R.color.dracula_red, null)
+    private val warnColor = context.resources.getColor(R.color.dracula_yellow, null)
+    private val goodColor = context.resources.getColor(R.color.dracula_green, null)
+    private val titleRowColor = context.resources.getColor(R.color.dracula_selection, null)
     private var displayIntro = true
 
     val yellow = Paint().apply {
@@ -135,7 +139,6 @@ class Display(val coach: Coach) {
         // Not a typo. Need to use height here otherwise points don't line up
         canvas!!.height.toFloat() / MODEL_WIDTH
 
-
     fun showRowerStats() {
 
         if (rower.strokeCount == 0) {
@@ -143,8 +146,13 @@ class Display(val coach: Coach) {
                 clearListItems()
                 displayIntro = true
             }
-            drawListItem("line 1",
-                "Use option menu to change camera position if needed.", "", "↑  ", null)
+            drawListItem(
+                "line 1",
+                "Use option menu to change camera position if needed.",
+                "",
+                "↑  ",
+                null
+            )
             drawListItem("line 2", " ", " ", " ", null)
             drawListItem("line 3", " ", " ", " ", null)
             drawListItem("line 4", " ", " ", " ", null)
@@ -152,8 +160,13 @@ class Display(val coach: Coach) {
             drawListItem("line 6", " ", " ", " ", null)
             drawListItem("line 7", " ", " ", " ", null)
             drawListItem("line 8", " ", " ", " ", null)
-            drawListItem("line 9",
-                "← Line up ghost image with rowing machine and then start rowing.", "", "", null)
+            drawListItem(
+                "line 9",
+                "← Line up ghost image with rowing machine and then start rowing.",
+                "",
+                "",
+                null
+            )
             return
         }
         if (displayIntro) {
@@ -214,13 +227,13 @@ class Display(val coach: Coach) {
         right: String,
         textColor: Int?,
     ) {
-        coach.context.mainExecutor.execute {
+        context.mainExecutor.execute {
             itemArrayAdapter?.addOrUpdate(Item(key, left, middle, right, textColor, null))
         }
     }
 
     private fun clearListItems() {
-        coach.context.mainExecutor.execute {
+        context.mainExecutor.execute {
             itemArrayAdapter?.clearItems()
         }
     }
@@ -233,7 +246,7 @@ class Display(val coach: Coach) {
         textColor: Int?,
         backgroundColor: Int?,
     ) {
-        coach.context.mainExecutor.execute {
+        context.mainExecutor.execute {
             itemArrayAdapter?.addOrUpdate(Item(key, left, middle, right, textColor, backgroundColor))
         }
     }
@@ -470,12 +483,28 @@ class Display(val coach: Coach) {
 
     fun showErgOverlay() {
         val drawableErg = ResourcesCompat.getDrawable(
-            coach.context.resources,
+            context.resources,
             R.drawable
                 .erg_overlay,
             null
         )
         drawableErg?.setBounds(0, 0, canvas!!.width, canvas!!.height)
         drawableErg?.draw(canvas!!)
+    }
+
+    /**
+     * Shows a [Toast] on the UI thread.
+     *
+     * @param text The message to show
+     */
+    fun showToast(text: String) {
+        context.mainExecutor.execute {
+            text.split('.').forEach { sentence ->
+                if (sentence.isNotBlank()) {
+                    val duration = if (sentence.length > 50) LENGTH_LONG else LENGTH_SHORT
+                    Toast.makeText(context, sentence, duration).show()
+                }
+            }
+        }
     }
 }

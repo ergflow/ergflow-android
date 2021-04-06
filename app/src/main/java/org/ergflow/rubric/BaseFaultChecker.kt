@@ -13,13 +13,14 @@ abstract class BaseFaultChecker(final override val coach: Coach) : FaultChecker 
     override var status = FaultChecker.Status.GOOD
     override val strokeHistory: MutableList<Float> = mutableListOf()
     override var initialMessageSent = false
-    override var faults: MutableMap<Int, Float> = mutableMapOf()
+    override var faultValueByStroke: MutableMap<Int, Float> = mutableMapOf()
     override var totalGoodStrokes = 0
     override var goodConsecutiveStrokes = 3
     override var badConsecutiveStrokes = 0
     override var numberOfFaultyStrokes = 0
     override var timeOfLastMessage = 0L
     private var numberOfStrokesReported = 0
+    var lastReportedStroke = -1
 
     val rower = coach.rower
 
@@ -61,11 +62,13 @@ abstract class BaseFaultChecker(final override val coach: Coach) : FaultChecker 
         val file = File(dir, "$title.html")
         Log.i(TAG, "updating fault report ${file.absolutePath}")
         FileWriter(file, true).use { out ->
-            if (faults.size == 1) {
+            if (faultValueByStroke.size == 1) {
+                // This is the first fault for this fault checker
                 out.append(faultReportDescription)
-                out.append("<table>")
             }
+            out.append("<div style=\"page-break-inside:avoid\">")
             out.append(faultReportImageRow())
+            out.append("</div>")
             numberOfStrokesReported++
         }
     }
@@ -79,7 +82,7 @@ abstract class BaseFaultChecker(final override val coach: Coach) : FaultChecker 
     }
 
     override fun clear() {
-        faults.clear()
+        faultValueByStroke.clear()
         numberOfFaultyStrokes = 0
         strokeHistory.clear()
         totalGoodStrokes = 0

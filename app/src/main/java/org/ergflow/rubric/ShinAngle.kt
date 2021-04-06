@@ -9,6 +9,7 @@ import org.ergflow.Coach
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import java.io.ByteArrayOutputStream
 import java.util.Base64
+import kotlin.math.roundToInt
 
 /**
  * Checks for proper forward shin angle at the catch.
@@ -87,6 +88,12 @@ class ShinAngle(coach: Coach) : BaseFaultChecker(coach) {
     override fun faultReportImageRow(): String {
         val out = ByteArrayOutputStream()
         val frame = rower.frames.find { it.time == catchTimeOfBadStroke }
+        frame?.also {
+            if (it.strokeCount == lastReportedStroke) {
+                return ""
+            }
+            lastReportedStroke = it.strokeCount
+        }
         val copy = frame?.bitmap?.copy(frame.bitmap.config, true) ?: return ""
         val canvas = Canvas(copy)
         coach.display.drawLines(canvas, frame.points)
@@ -109,12 +116,15 @@ class ShinAngle(coach: Coach) : BaseFaultChecker(coach) {
                 1000
         )
         return """
+            <table>
             <tr><td>
                 $time stroke # ${frame.strokeCount} 
+                shin angle ${badAngle.roundToInt()} $strokeHistoryUnit
             </td></tr>
             <tr><td>
                 <img src="data:image/jpg;base64, $imageData"/>
             </td></tr>
+            </table>
         """
     }
 }

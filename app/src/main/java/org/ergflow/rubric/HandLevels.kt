@@ -8,7 +8,7 @@ import android.text.format.DateUtils
 import android.util.Log
 import org.ergflow.Coach
 import java.io.ByteArrayOutputStream
-import java.util.*
+import java.util.Base64
 import kotlin.math.cos
 import kotlin.math.max
 
@@ -222,16 +222,21 @@ class HandLevels(coach: Coach) : BaseFaultChecker(coach) {
             Log.w(TAG, "frame with time $catchTimeOfBadStroke not found")
             return ""
         }
+        if (frame1.strokeCount == lastReportedStroke) {
+            return ""
+        }
+        lastReportedStroke = frame1.strokeCount
         val time = DateUtils.formatElapsedTime(
             (frame1.time - rower.startTime!!) /
                 1000
         )
         var html =
             """
+                <table>
                 <tr>
-                    <th>
+                    <td colspan="100">
                         $time stroke # ${frame1.strokeCount}
-                    </th>
+                    </td>
                 </tr>
                 <tr>
             """
@@ -263,7 +268,7 @@ class HandLevels(coach: Coach) : BaseFaultChecker(coach) {
                     """
             }
 
-        html += "</tr>"
+        html += "</tr></table>"
         return html
     }
 

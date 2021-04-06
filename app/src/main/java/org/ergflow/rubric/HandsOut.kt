@@ -8,9 +8,9 @@ import org.ergflow.Coach
 import org.ergflow.Frame
 import org.ergflow.Rower
 import org.ergflow.Stats
-import org.tensorflow.lite.examples.posenet.lib.BodyPart.*
+import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import java.io.ByteArrayOutputStream
-import java.util.*
+import java.util.Base64
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -63,7 +63,11 @@ class HandsOut(coach: Coach) : BaseFaultChecker(coach) {
                     maxKneeDelta = (it * maxKneeDeltaBodyRatio).roundToInt()
                 }
                 val ankle = rower.fixedAnkle
-                val shinLength = rower.averageShinLength ?: return
+                val shinLength = rower.averageShinLength
+                if (shinLength == null) {
+                    Log.w(TAG, "stroke ${rower.strokeCount} rower.averageShinLength is null")
+                    return
+                }
                 midThighX = (ankle.x + shinLength * 1.2).roundToInt()
 
                 kneeDeltaBeforeHandsPass?.let { delta ->
@@ -140,11 +144,11 @@ class HandsOut(coach: Coach) : BaseFaultChecker(coach) {
 
     private fun annotateImage(canvas: Canvas, frame: Frame) {
         val yAveHip =
-            Stats.truncatedAverage(rower.frames.map { it.points[LEFT_HIP]!!.y }, 5)
+            Stats.truncatedAverage(rower.frames.map { it.points[BodyPart.LEFT_HIP]!!.y }, 5)
                 ?: rower.finishKnee!!.y
-        val currentWrist = frame.points.getValue(LEFT_WRIST)
+        val currentWrist = frame.points.getValue(BodyPart.LEFT_WRIST)
         if (currentWrist.x > midThighX) {
-            val currentKnee = frame.points.getValue(LEFT_KNEE)
+            val currentKnee = frame.points.getValue(BodyPart.LEFT_KNEE)
             canvas.drawLine(
                 currentKnee.x.toFloat(),
                 yAveHip.toFloat(),
@@ -177,6 +181,10 @@ class HandsOut(coach: Coach) : BaseFaultChecker(coach) {
             Log.w(TAG, "finish frame with time $badFinishTimestamp not found")
             return ""
         }
+        if (finish.strokeCount == lastReportedStroke) {
+            return ""
+        }
+        lastReportedStroke = finish.strokeCount
         val midThighRecovery = rower.frames.find { it.time == badHandsMidThighTimestamp }
         if (midThighRecovery == null) {
             Log.w(
@@ -191,6 +199,7 @@ class HandsOut(coach: Coach) : BaseFaultChecker(coach) {
         )
         var html =
             """
+                <table>
                 <tr><td colspan="2">$time stroke # ${finish.strokeCount}</td></tr>
                 <tr><td>finish</td><td>recovery</td></tr>
                 <tr>
@@ -215,7 +224,7 @@ class HandsOut(coach: Coach) : BaseFaultChecker(coach) {
                 """
         }
 
-        html += "</tr>"
+        html += "</tr></table>"
         return html
     }
 

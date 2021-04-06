@@ -12,7 +12,7 @@ import org.ergflow.Point
 import org.ergflow.Rower
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import java.io.ByteArrayOutputStream
-import java.util.*
+import java.util.Base64
 import kotlin.math.abs
 
 /**
@@ -28,8 +28,8 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
         "change at the catch."
     override val strokeHistoryUnit = "Δ°"
     private val acceptableDeltaRange = -10.0..15.0
-
     private var preLungeAngle: Double? = null
+
     private var preLungeBitmap: Bitmap? = null
     private var preLungeHip: Point? = null
     private var preLungeShoulder: Point? = null
@@ -79,7 +79,7 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
         if (event == Coach.Event.FINISH) {
             // Take the delta between catch angle and current body angle.
             val catchAngle = rower.catchBodyAngle!!
-            var delta = (preLungeAngle?: catchAngle) - catchAngle
+            var delta = (preLungeAngle ?: catchAngle) - catchAngle
             Log.w(TAG, "delta $delta")
             preLungeAngle = rower.catchBodyAngle!!
             Log.w(TAG, "finish  preLungeAngle $preLungeAngle")
@@ -90,7 +90,7 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
                 // If hip to ear delta is less than hip to shoulder then use that.
                 if (preLungeHip != null && preLungeEar != null) {
                     val delta2 = rower.angle(preLungeHip!!, preLungeEar!!) -
-                            rower.angle(rower.catchHip!!, rower.catchEar!!)
+                        rower.angle(rower.catchHip!!, rower.catchEar!!)
                     if (abs(delta2) < abs(delta)) {
                         delta = delta2
                     }
@@ -183,6 +183,10 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
             Log.w(TAG, "catch frame with time $catchTimeOfBadStroke not found")
             return ""
         }
+        if (catch.strokeCount == lastReportedStroke) {
+            return ""
+        }
+        lastReportedStroke = catch.strokeCount
         val preLunge = rower.frames.find { it.time == preLungeTimeOfBadStroke }
         if (preLunge == null) {
             Log.w(TAG, "preLunge frame with time $preLungeTimeOfBadStroke not found")
@@ -196,8 +200,9 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
             "Lunging at catch"
         var html =
             """
+                <table>
                 <tr>
-                    <td colspan="100">
+                    <td colspan="2">
                         $time stroke # ${catch.strokeCount} $message
                     </td>
                 </tr>
@@ -229,7 +234,7 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
                 """
         }
 
-        html += "</tr>"
+        html += "</tr></table>"
         return html
     }
 

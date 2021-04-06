@@ -37,7 +37,7 @@
 
     <activity
         android:screenOrientation="landscape"
-        android:name="org.ergflow.activity.WebViewActivity"
+        android:name="android.print.WebViewActivity"
         android:exported="true">
     </activity>
 

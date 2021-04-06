@@ -12,7 +12,7 @@ import org.ergflow.Point
 import org.ergflow.Rower
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import java.io.ByteArrayOutputStream
-import java.util.*
+import java.util.Base64
 import kotlin.math.abs
 
 /**
@@ -94,7 +94,7 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
                 // If hip to ear delta is less than hip to shoulder then use that.
                 if (preOpenHip != null && preOpenEar != null) {
                     val delta2 = rower.angle(preOpenHip!!, preOpenEar!!) -
-                            rower.angle(rower.catchHip!!, rower.catchEar!!)
+                        rower.angle(rower.catchHip!!, rower.catchEar!!)
                     if (abs(delta2) < abs(delta)) {
                         delta = delta2
                     }
@@ -184,10 +184,17 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
         val catch = rower.frames.find { it.time == catchTimeOfBadStroke }
         if (catch == null) {
             Log.w(TAG, "catch frame with time $catchTimeOfBadStroke not found")
-            Log.w(TAG, "time $catchTimeOfBadStroke was " +
-                    "${System.currentTimeMillis() - catchTimeOfBadStroke} ms ago")
+            Log.w(
+                TAG,
+                "time $catchTimeOfBadStroke was " +
+                    "${System.currentTimeMillis() - catchTimeOfBadStroke} ms ago"
+            )
             return ""
         }
+        if (catch.strokeCount == lastReportedStroke) {
+            return ""
+        }
+        lastReportedStroke = catch.strokeCount
         val preOpen = rower.frames.find { it.time == preOpenTimeOfBadStroke }
         if (preOpen == null) {
             Log.w(TAG, "preopen frame with time $preOpenTimeOfBadStroke not found")
@@ -200,6 +207,7 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
         val message = if (strokeHistory.last() > 0) "Opening up too early" else "Shooting the slide"
         var html =
             """
+                <table>
                 <tr>
                     <td colspan="100">
                         $time stroke # ${catch.strokeCount} $message
@@ -230,7 +238,7 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
                 """
         }
 
-        html += "</tr>"
+        html += "</tr></table>"
         return html
     }
 

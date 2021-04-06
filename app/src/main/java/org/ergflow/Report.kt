@@ -1,5 +1,6 @@
 package org.ergflow
 
+import android.content.Context
 import android.text.format.DateUtils
 import android.util.Log
 import org.ergflow.rubric.BaseFaultChecker
@@ -7,16 +8,20 @@ import org.ergflow.rubric.FaultChecker
 import java.io.File
 import java.io.PrintWriter
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 /**
  * HTML ErgFlow Report.
  */
-class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>, private val cacheDir: File) {
+class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>, private val context: Context) {
 
+    private val cacheDir = context.cacheDir
     var cachedReportPath: String? = null
 
     private fun header(): String {
+        val formatDate = SimpleDateFormat("yyyy-MM-dd h:mm aaa", Locale.getDefault())
+            .format(Date(rower.startTime ?: System.currentTimeMillis()))
         return """
         <!doctype html>
         <html lang="en"><head>
@@ -44,8 +49,7 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
                         <div class="column  column-90">
                             <h1> ErgFlow Report </h1>
                             <h3>
-                            ${SimpleDateFormat("yyyy-MM-dd h:mm aaa", Locale.getDefault())
-            .format(Date(rower.startTime ?: System.currentTimeMillis()))}
+                            $formatDate
                             </h3>
                         </div>
                     </div>
@@ -54,7 +58,7 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
         """
     }
 
-    // <editor-fold desc="logo svg">
+    // <editor-fold defaultstate="collapsed" desc="logo svg" >
     private fun logoSvg(): String {
         return """
         <svg class="icon" width="100" height="100" viewBox="0 0 152.4 152.4" version="1.1" 
@@ -234,14 +238,17 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
                   <td>${mark.percent}%</td>
                   <td class="bad">${mark.totalStrokes - mark.goodStrokes}</td>
                   <td class="good">${mark.goodStrokes}</td>
-                  <td>${String.format("%.1f", 
-                          if (f.strokeHistory.isNotEmpty()) f.strokeHistory.average() else 0f)
-                        }${f.strokeHistoryUnit}</td>
+                  <td>${average(f)} ${f.strokeHistoryUnit}</td>
                 </tr>
             """
         }
         return row
     }
+
+    private fun average(f: BaseFaultChecker) = String.format(
+        "%.1f",
+        if (f.strokeHistory.isNotEmpty()) f.strokeHistory.average() else 0f
+    )
 
     /**
      * Get the temporary working directory.
@@ -272,7 +279,7 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
         Log.i(TAG, "${faults.size} fault(s) found")
         val faultDir = tempReportDir()
         faults.forEach {
-            it.faults[rower.strokeCount] = it.strokeHistory.lastOrNull() ?: 0f
+            it.faultValueByStroke[rower.strokeCount] = it.strokeHistory.lastOrNull() ?: 0f
             it.updateFaultReport(faultDir)
         }
     }
@@ -290,7 +297,7 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
         val sections = mutableListOf<String>()
         sections.add(header())
         sections.add(summary())
-        val cachedReport = File(tempReportDir(), REPORT_FILE_NAME)
+        val cachedReport = File(tempReportDir(), HTML_REPORT_FILE_NAME)
         cachedReportPath = cachedReport.absolutePath
         Log.i(TAG, "saving cached report to $cachedReportPath")
         if (cachedReport.exists()) cachedReport.delete()
@@ -305,12 +312,14 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
 
     private fun appendFaultFragments(out: PrintWriter) {
         tempReportDir().listFiles()
-            ?.filter { !it.endsWith(REPORT_FILE_NAME) }
+            ?.filter { !it.endsWith(HTML_REPORT_FILE_NAME) }
             ?.forEach {
                 Log.i(TAG, "appending fault ${it.name} with size ${it.length()} to the report")
+                out.print("<div style=\"page-break-inside:avoid\">")
                 out.print("<section class=\"container\"><br/>")
                 out.print(it.readText())
-                out.print("</table></section>")
+                out.print("</section>")
+                out.print("</div> ")
                 it.deleteOnExit()
             }
     }
@@ -322,8 +331,8 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
         private const val TAG = "Report"
 
         /**
-         * Temporary report file name..
+         * Temporary HTML report file name.
          */
-        private const val REPORT_FILE_NAME = "ergflow_report.html"
+        private const val HTML_REPORT_FILE_NAME = "ergflow_report.html"
     }
 }

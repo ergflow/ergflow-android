@@ -74,9 +74,9 @@ enum class Device {
 }
 
 class Posenet(
-        private val context: Context,
-        private val filename: String = "posenet_model.tflite",
-        private val device: Device = Device.NNAPI
+    private val context: Context,
+    private val filename: String = "posenet_model.tflite",
+    private val device: Device = Device.NNAPI
 ) : AutoCloseable {
     private var lastInferenceTimeNanos: Long = -1
         private set

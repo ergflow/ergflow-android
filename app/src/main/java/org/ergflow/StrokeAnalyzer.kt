@@ -4,11 +4,21 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.util.Log
-import android.widget.Toast
-import org.tensorflow.lite.examples.posenet.lib.BodyPart.*
+import org.tensorflow.lite.examples.posenet.lib.BodyPart
+import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_ANKLE
+import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_ELBOW
+import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_HIP
+import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_KNEE
+import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_SHOULDER
+import org.tensorflow.lite.examples.posenet.lib.BodyPart.LEFT_WRIST
 import org.tensorflow.lite.examples.posenet.lib.KeyPoint
 import org.tensorflow.lite.examples.posenet.lib.Person
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.max
+import kotlin.math.pow
+import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 /**
  * This class receives posnet Person detection results in realtime. It analyzes the detected
@@ -68,7 +78,6 @@ class StrokeAnalyzer(private val context: Context) {
 
         analyze()
         addFrame(bitmap, time)
-
     }
 
     fun updateDisplay(
@@ -108,11 +117,20 @@ class StrokeAnalyzer(private val context: Context) {
             shinLengths.add(rower.currentShinLength)
             rower.currentThighLength = rower.currentDistance(LEFT_KNEE, LEFT_HIP).toFloat()
             thighLengths.add(rower.currentThighLength)
-            rower.currentBodyLength = rower.currentDistance(LEFT_HIP, LEFT_SHOULDER).toFloat()
+            rower.currentBodyLength = rower.currentDistance(
+                LEFT_HIP,
+                LEFT_SHOULDER
+            ).toFloat()
             bodyLengths.add(rower.currentBodyLength)
-            rower.currentUpperArmLength = rower.currentDistance(LEFT_ELBOW, LEFT_SHOULDER).toFloat()
+            rower.currentUpperArmLength = rower.currentDistance(
+                LEFT_ELBOW,
+                LEFT_SHOULDER
+            ).toFloat()
             upperArmLengths.add(rower.currentUpperArmLength)
-            rower.currentForearmLength = rower.currentDistance(LEFT_WRIST, LEFT_ELBOW).toFloat()
+            rower.currentForearmLength = rower.currentDistance(
+                LEFT_WRIST,
+                LEFT_ELBOW
+            ).toFloat()
             forearmLengths.add(rower.currentForearmLength)
             fixTyrannosaurusArms()
             rower.hipHeights.add(rower.currentHip!!.y.toFloat())
@@ -135,7 +153,7 @@ class StrokeAnalyzer(private val context: Context) {
                     }
                 } else if (++handUpFrameCount > 150) {
                     Log.w(TAG, "reset")
-                    showToast("Resetting session")
+                    display.showToast("Resetting session")
                     coach.saveStats()
                     rower.reset()
                     coach.reset()
@@ -343,7 +361,7 @@ class StrokeAnalyzer(private val context: Context) {
                 getPoint(LEFT_HIP)?.apply {
                     rower.catchHip = Point(position.x, position.y, catch.time)
                 }
-                getPoint(LEFT_EAR)?.apply {
+                getPoint(BodyPart.LEFT_EAR)?.apply {
                     rower.catchEar = Point(position.x, position.y, catch.time)
                 }
                 rower.catchBodyAngle = getAngle(rower.catchHip, rower.catchShoulder)
@@ -455,9 +473,12 @@ class StrokeAnalyzer(private val context: Context) {
             System.currentTimeMillis() - it.time > frameShelfLife
         }
         if (expired.isNotEmpty()) {
-            Log.d(TAG, "removing ${expired.size} expired frames " +
+            Log.d(
+                TAG,
+                "removing ${expired.size} expired frames " +
                     "starting with frame at ${expired.first().time} and " +
-                    "ending at ${expired.last().time}")
+                    "ending at ${expired.last().time}"
+            )
         }
         rower.frames.removeAll(expired)
     }
@@ -640,15 +661,6 @@ class StrokeAnalyzer(private val context: Context) {
         }
 
         return angle
-    }
-
-    /**
-     * Shows a [Toast] on the UI thread.
-     *
-     * @param text The message to show
-     */
-    private fun showToast(text: String) {
-        context.mainExecutor.execute {  Toast.makeText(context, text, Toast.LENGTH_SHORT).show() }
     }
 
     companion object {

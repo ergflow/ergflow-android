@@ -68,7 +68,7 @@ class Coach(val context: Context, val rower: Rower) {
         lungingAtCatch,
     )
 
-    val report = Report(rower, faultCheckers, context.cacheDir)
+    val report = Report(rower, faultCheckers, context)
     private var timeOfLastCatch = 0L
     private var timeOfLastFinish = 0L
 
@@ -173,6 +173,7 @@ class Coach(val context: Context, val rower: Rower) {
                 "Message length ${message.length} > TextToSpeech.getMaxSpeechInputLength() $maxLength"
             )
         }
+        display.showToast(message)
         Log.i(TAG, message.take(maxLength))
         textToSpeech?.speak(
             message.take(maxLength),

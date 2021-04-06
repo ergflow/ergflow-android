@@ -11,6 +11,7 @@ import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import java.io.ByteArrayOutputStream
 import java.util.Base64
 import kotlin.math.cos
+import kotlin.math.roundToInt
 
 /**
  * Checks for proper layback position at the finish.
@@ -48,8 +49,7 @@ class Layback(coach: Coach) : BaseFaultChecker(coach) {
     override fun onEvent(event: Coach.Event) {
         if (event == Coach.Event.FINISH) {
             rower.finishBodyAngle?.apply {
-                // Catch angles outside of (30, 160) range are probably detection errors
-                if (this > 30 && this < 160) {
+                if (detectionLooksOk()) {
                     strokeHistory.add(this.toFloat())
                     if (this >= minFinishAngle && this <= maxFinishAngle) {
                         goodStroke()
@@ -59,9 +59,6 @@ class Layback(coach: Coach) : BaseFaultChecker(coach) {
                         badBodyAngle = this
                     }
                     when {
-                        rower.legDeviationPercent > 15 -> {
-                            // probably bad hip detection so ignore
-                        }
                         this < minFinishAngle -> {
                             currentFaultType = "Not enough layback at the finish. "
                         }
@@ -72,6 +69,38 @@ class Layback(coach: Coach) : BaseFaultChecker(coach) {
                 }
             }
         }
+    }
+
+    /**
+     * Extra heuristics to ignore errors in detection of the finish position.
+     */
+    private fun detectionLooksOk(): Boolean {
+        val finishAngle = rower.finishBodyAngle ?: return false
+        val elbow = rower.finishElbow ?: return false
+        val shoulder = rower.finishShoulder ?: return false
+
+        // Assume error in detection if finish angle out of this range
+        if (finishAngle !in 60.0..160.0) {
+            Log.w(
+                TAG,
+                "Stroke ${rower.strokeCount}: Invalid detection for finish angle $finishAngle"
+            )
+            return false
+        }
+
+        // Assume error in detecting finish if elbow is not past body.
+        // If elbow is in front of body then humerus angle will be greater than body angle.
+        val humerusAngle = rower.angle(elbow, shoulder)
+        if (humerusAngle > finishAngle) {
+            Log.w(
+                TAG,
+                "Stroke ${rower.strokeCount}: Invalid detection " +
+                    "humerus angle $humerusAngle finish angle $finishAngle"
+            )
+            return false
+        }
+
+        return true
     }
 
     override fun updateDisplay() {
@@ -103,6 +132,12 @@ class Layback(coach: Coach) : BaseFaultChecker(coach) {
     override fun faultReportImageRow(): String {
         val out = ByteArrayOutputStream()
         val frame = rower.frames.find { it.time == finishTimeOfBadStroke }
+        frame?.also {
+            if (it.strokeCount == lastReportedStroke) {
+                return ""
+            }
+            lastReportedStroke = it.strokeCount
+        }
         val copy = frame?.bitmap?.copy(frame.bitmap.config, true)
         if (copy == null) {
             Log.w(TAG, "finishTimeOfBadStroke not found: $finishTimeOfBadStroke")
@@ -131,13 +166,15 @@ class Layback(coach: Coach) : BaseFaultChecker(coach) {
                 1000
         )
         return """
+            <table>
             <tr><td>
                 $time stroke # ${frame.strokeCount} 
-                Ideal finish body angle is 110 degrees. Yours is ${badBodyAngle.toInt()}
+                Ideal finish body angle is 110 degrees. Yours is ${badBodyAngle.roundToInt()}
             </td></tr>
             <tr><td>
                 <img src="data:image/jpg;base64, $imageData"/>
             </td></tr>
+            </table>
         """
     }
 

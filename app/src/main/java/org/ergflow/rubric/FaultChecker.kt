@@ -80,7 +80,7 @@ interface FaultChecker {
     /**
      * Fault map key by stroke count when fault happened and strokeHistory value.
      */
-    var faults: MutableMap<Int, Float>
+    var faultValueByStroke: MutableMap<Int, Float>
 
     fun getFaultInitialMessage(): String
 

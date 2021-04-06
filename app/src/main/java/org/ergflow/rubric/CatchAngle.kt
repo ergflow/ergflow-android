@@ -9,8 +9,9 @@ import android.util.Log
 import org.ergflow.Coach
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import java.io.ByteArrayOutputStream
-import java.util.*
+import java.util.Base64
 import kotlin.math.cos
+import kotlin.math.roundToInt
 
 /**
  * Checks for proper forward body angle at the catch.
@@ -23,6 +24,7 @@ class CatchAngle(coach: Coach) : BaseFaultChecker(coach) {
     override val title = "Catch Angle"
     override val description = "Checks for proper forward body angle at the catch."
     private var catchTimeOfBadStroke = 0L
+    private var badCatchAngle = 0.0
 
     init {
         coach.listeners.add(this::onEvent)
@@ -53,6 +55,7 @@ class CatchAngle(coach: Coach) : BaseFaultChecker(coach) {
                     } else {
                         badStroke()
                         catchTimeOfBadStroke = rower.catchShoulder?.time ?: 0
+                        badCatchAngle = this
                     }
                 }
             }
@@ -83,10 +86,17 @@ class CatchAngle(coach: Coach) : BaseFaultChecker(coach) {
         val frame = rower.frames.find { it.time == catchTimeOfBadStroke }
         if (frame == null) {
             Log.w(TAG, "catch frame with time $catchTimeOfBadStroke not found")
-            Log.w(TAG, "time $catchTimeOfBadStroke was " +
-                    "${System.currentTimeMillis() - catchTimeOfBadStroke} ms ago")
+            Log.w(
+                TAG,
+                "time $catchTimeOfBadStroke was " +
+                    "${System.currentTimeMillis() - catchTimeOfBadStroke} ms ago"
+            )
             return ""
         }
+        if (frame.strokeCount == lastReportedStroke) {
+            return ""
+        }
+        lastReportedStroke = frame.strokeCount
         val copy = frame.bitmap?.copy(frame.bitmap.config, true) ?: return ""
         val canvas = Canvas(copy)
         coach.display.drawLines(canvas, frame.points)
@@ -111,12 +121,15 @@ class CatchAngle(coach: Coach) : BaseFaultChecker(coach) {
                 1000
         )
         return """
+            <table>
             <tr><td>
                 $time stroke # ${frame.strokeCount} 
+                catch angle ${badCatchAngle.roundToInt()} $strokeHistoryUnit
             </td></tr>
             <tr><td>
                 <img src="data:image/jpg;base64, $imageData"/>
             </td></tr>
+            </table>
         """
     }
 
