@@ -25,7 +25,12 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
     override val description = "Looks for opening up too early or shooting the slide faults by " +
         "measuring the change in body angle during the early drive."
     override val strokeHistoryUnit = "Δ°"
-    private val acceptableDeltaRange = -5.0..16.0
+    private val minEarlyDriveDelta = prefs.getString("minEarlyDriveDelta", null)
+        ?.toDoubleOrNull() ?: -5.0
+    private val maxEarlyDriveDelta = prefs.getString("maxEarlyDriveDelta", null)
+        ?.toDoubleOrNull() ?: 16.0
+
+    private val acceptableDeltaRange = minEarlyDriveDelta..maxEarlyDriveDelta
 
     private var preOpenAngle = 0.0
     private var preOpenBitmap: Bitmap? = null
@@ -60,6 +65,10 @@ class EarlyDriveBodyAngle(coach: Coach) : BaseFaultChecker(coach) {
 
     override fun getFixedMessage(): String {
         return ""
+    }
+
+    override fun getThresholdInfo(): String {
+        return "[$minEarlyDriveDelta, $maxEarlyDriveDelta] $strokeHistoryUnit"
     }
 
     override fun onEvent(event: Coach.Event) {

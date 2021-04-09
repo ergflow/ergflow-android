@@ -91,6 +91,13 @@ interface FaultChecker {
     fun getTotalMark(): Mark
 
     /**
+     * Threshold values to be displayed in the report.
+     *
+     * @return threshold values as a string
+     */
+    fun getThresholdInfo(): String
+
+    /**
      * Called for every frame so that the fault checker can update the display.
      */
     fun updateDisplay() {}

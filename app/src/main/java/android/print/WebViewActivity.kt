@@ -89,7 +89,7 @@ class WebViewActivity : Activity() {
         val path = intent.getStringExtra(WEBVIEW_URL)
         reportTimestamp = intent.getStringExtra(REPORT_TIMESTAMP)
         cachedHtmlReportPath = intent.getStringExtra(CACHED_REPORT)
-        cachedPdfReportPath = cachedHtmlReportPath?.replace("html$", "pdf")
+        cachedPdfReportPath = cachedHtmlReportPath?.replace("html", "pdf")
         webView.loadUrl("file://$path")
     }
 
@@ -127,14 +127,14 @@ class WebViewActivity : Activity() {
         if (requestCode == WRITE_REQUEST_CODE) {
             when (resultCode) {
                 RESULT_OK -> data?.data?.let { uri ->
-                    cachedHtmlReportPath?.apply {
+                    cachedPdfReportPath?.apply {
                         val source = File(this)
                         if (source.exists()) {
                             Log.i(TAG, "Saving ${source.absolutePath} to $uri")
                             contentResolver?.openOutputStream(uri)?.use { out ->
                                 source.inputStream().use { it.copyTo(out) }
                             }
-                            source.deleteOnExit()
+                            source.parentFile?.deleteRecursively()
                         } else {
                             Log.w(TAG, "Source ${source.absolutePath} does not exist")
                             showToast("Unable to save the report")

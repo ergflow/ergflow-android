@@ -27,7 +27,8 @@ class HandsOut(coach: Coach) : BaseFaultChecker(coach) {
         "compared to knee height when hands pass the thighs."
     override val strokeHistoryUnit = "Δ"
     private var maxKneeDelta = 25 // will be set later relative to body length
-    private val maxKneeDeltaBodyRatio = 0.15
+    private val maxKneeDeltaBodyRatio = prefs.getString("maxKneeDeltaBodyRatio", null)
+        ?.toDoubleOrNull() ?: 0.15
     private var kneeDeltaBeforeHandsPass: Int? = null
     private var midThighX = 210
     private var handsMidThighTimestamp = 0L
@@ -44,6 +45,10 @@ class HandsOut(coach: Coach) : BaseFaultChecker(coach) {
 
     override fun getFixedMessage(): String {
         return ""
+    }
+
+    override fun getThresholdInfo(): String {
+        return "knee$strokeHistoryUnit <= $maxKneeDelta "
     }
 
     override fun getTotalMark(): FaultChecker.Mark {

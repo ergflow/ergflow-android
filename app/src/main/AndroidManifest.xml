@@ -13,11 +13,12 @@
 
   <application
       android:allowBackup="false"
+      android:forceDarkAllowed="true"
       android:icon="@drawable/ic_ergflow"
       android:label="@string/tfe_pn_app_name"
       android:roundIcon="@drawable/ic_ergflow"
       android:supportsRtl="true"
-      android:theme="@style/AppTheme.Posenet"
+      android:theme="@style/Posenet"
       android:usesCleartextTraffic="true">
 
     <activity
@@ -28,7 +29,8 @@
     </activity>
 
     <activity android:screenOrientation="landscape"  android:name="org.ergflow.activity.CameraActivity"
-        android:exported="true">
+        android:exported="true"
+        android:theme="@style/Posenet">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>

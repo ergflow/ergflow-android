@@ -25,7 +25,12 @@ class RushingTheSlide(coach: Coach) : BaseFaultChecker(coach) {
         return ""
     }
 
-    private val maxSlideRatio = 1f
+    override fun getThresholdInfo(): String {
+        return "$strokeHistoryUnit <= $maxSlideRatio"
+    }
+
+    private val maxSlideRatio = prefs.getString("maxSlideRatio", null)
+        ?.toFloatOrNull() ?: 1f
 
     init {
         coach.listeners.add(this::onEvent)

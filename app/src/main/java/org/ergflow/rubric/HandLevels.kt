@@ -24,7 +24,9 @@ class HandLevels(coach: Coach) : BaseFaultChecker(coach) {
     override val description = "Checks for consistent hand levels by measuring difference in " +
         "actual heights with expected heights"
 
-    private var allowedMaxDeviation = 5
+    private var maxHandLevelDeviation = prefs.getString("maxHandLevelDeviation", null)
+        ?.toIntOrNull() ?: 5
+
     override val strokeHistoryUnit = "Δ"
     private var leftX: Float? = null
     private var rightX: Float? = null
@@ -61,6 +63,10 @@ class HandLevels(coach: Coach) : BaseFaultChecker(coach) {
         return ""
     }
 
+    override fun getThresholdInfo(): String {
+        return "$strokeHistoryUnit <= $maxHandLevelDeviation"
+    }
+
     override fun onEvent(event: Coach.Event) {
 
         when (event) {
@@ -80,7 +86,7 @@ class HandLevels(coach: Coach) : BaseFaultChecker(coach) {
                 bottomY = 125f
 
                 strokeHistory.add(currentDelta)
-                if (currentDelta <= allowedMaxDeviation) {
+                if (currentDelta <= maxHandLevelDeviation) {
                     goodStroke()
                 } else {
                     badStroke()

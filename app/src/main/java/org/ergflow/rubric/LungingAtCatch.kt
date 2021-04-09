@@ -22,12 +22,17 @@ import kotlin.math.abs
  */
 class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
 
-    override val title = "Not Lunging at the Catch"
+    override val title = "Lunging at the Catch"
     override val description = "Measures the change in body angle during the recovery before the " +
         "catch. Catch body angle should be established early in the recovery and should not " +
         "change at the catch."
     override val strokeHistoryUnit = "Δ°"
-    private val acceptableDeltaRange = -10.0..15.0
+    private val minLungingAtCatchDelta = prefs.getString("minLungingAtCatchDelta", null)
+        ?.toDoubleOrNull() ?: -10.0
+    private val maxLungingAtCatchDelta = prefs.getString("maxLungingAtCatchDelta", null)
+        ?.toDoubleOrNull() ?: 15.0
+
+    private val acceptableDeltaRange = minLungingAtCatchDelta..maxLungingAtCatchDelta
     private var preLungeAngle: Double? = null
 
     private var preLungeBitmap: Bitmap? = null
@@ -62,6 +67,10 @@ class LungingAtCatch(coach: Coach) : BaseFaultChecker(coach) {
 
     override fun getFixedMessage(): String {
         return ""
+    }
+
+    override fun getThresholdInfo(): String {
+        return "[$minLungingAtCatchDelta, $maxLungingAtCatchDelta] $strokeHistoryUnit"
     }
 
     override fun onEvent(event: Coach.Event) {

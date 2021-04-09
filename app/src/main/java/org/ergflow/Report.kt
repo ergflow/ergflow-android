@@ -4,7 +4,6 @@ import android.content.Context
 import android.text.format.DateUtils
 import android.util.Log
 import org.ergflow.rubric.BaseFaultChecker
-import org.ergflow.rubric.FaultChecker
 import java.io.File
 import java.io.PrintWriter
 import java.text.SimpleDateFormat
@@ -196,25 +195,43 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
             totalGood += totalMark.goodStrokes
             total += totalMark.totalStrokes
         }
-        val overallTotal = FaultChecker.Mark(totalGood, total)
+
         return """
             <section class="container" id="summary">
+                <p/>
                 <h2>Summary</h2>
-                <p><b>
-                Duration: $duration<br/>
-                Average Stroke Rate: ${rower.averageStrokeRate}<br/>
-                Technical Score: ${overallTotal.percent}%
-                </b></p>
+                <p/>
+                <table><tbody>
+                    <tr><td>Duration</td><td>$duration</td></tr>
+                    <tr><td>Average Stroke Rate</td><td>${rower.averageStrokeRate}</td></tr>
+                    <tr><td>Number of Strokes</td><td>${rower.strokeCount}</td></tr>
+                    <tr><td>Number of Strokes With Errors</td><td>${rower.errorStrokeCount}</td></tr>
+                    <tr><td>Percentage of Good Strokes</td><td>${percentGoodStrokes()}%</td></tr>
+                </tbody></table>
+                <p/>
                 <br/>
-                <h2>Results</h2>
+                <h2 style="page-break-before: always">Tests</h2>
                 <table>
                   <thead>
                     <tr>
                       <th>Test</th>
                       <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${testsTableRow()}
+                  </tbody>
+                </table>
+                <br/>
+                <h2 style="page-break-before: always">Results</h2>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Test</th>
                       <th>Percent Good</th>
                       <th>Bad Strokes</th>
                       <th>Good Strokes</th>
+                      <th>Threshold</th>
                       <th>Average Value</th>
                     </tr>
                   </thead>
@@ -227,6 +244,24 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
         """
     }
 
+    private fun percentGoodStrokes(): Int {
+        if (rower.strokeCount == 0) return 0
+        return 100 * (rower.strokeCount - rower.errorStrokeCount) / rower.strokeCount
+    }
+
+    private fun testsTableRow(): String {
+        var row = ""
+        faultCheckers.forEach { f ->
+            row += """
+                <tr>
+                  <td style="white-space:nowrap">${f.title}</td>
+                  <td>${f.description}</td>
+                </tr>
+            """
+        }
+        return row
+    }
+
     private fun summaryTableRow(): String {
         var row = ""
         faultCheckers.forEach { f ->
@@ -234,10 +269,10 @@ class Report(val rower: Rower, private val faultCheckers: List<BaseFaultChecker>
             row += """
                 <tr>
                   <td>${f.title}</td>
-                  <td>${f.description}</td>
                   <td>${mark.percent}%</td>
                   <td class="bad">${mark.totalStrokes - mark.goodStrokes}</td>
                   <td class="good">${mark.goodStrokes}</td>
+                  <td style="white-space:nowrap">${f.getThresholdInfo()}</td>
                   <td>${average(f)} ${f.strokeHistoryUnit}</td>
                 </tr>
             """

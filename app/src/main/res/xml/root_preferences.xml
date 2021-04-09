@@ -1,0 +1,95 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/prefs">
+
+    <EditTextPreference
+        android:key="catchAngleMax"
+        android:title="Max Catch Angle Degrees"
+        android:inputType="number"
+        android:digits="0123456789"
+        android:defaultValue="80"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        android:key="minEarlyDriveDelta"
+        android:title="Early Drive Body Angle Min Delta"
+        android:inputType="numberSigned"
+        android:digits="0123456789"
+        android:defaultValue="-5"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        android:key="maxEarlyDriveDelta"
+        android:title="Early Drive Body Angle Max Delta"
+        android:inputType="numberDecimal"
+        android:digits="0123456789"
+        android:defaultValue="16"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        android:key="maxHandLevelDeviation"
+        android:title="Max Hand Level Deviation"
+        android:inputType="numberDecimal"
+        android:digits="0123456789"
+        android:defaultValue="5"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        android:key="maxKneeDeltaBodyRatio"
+        android:title="Early Recovery Max Knee delta (measured in body lengths)"
+        android:inputType="numberDecimal"
+        android:digits="0123456789."
+        android:defaultValue="0.15"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        android:key="finishAngleMon"
+        android:title="Min Finish Angle Degrees"
+        android:inputType="numberDecimal"
+        android:digits="0123456789"
+        android:defaultValue="95"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        android:key="finishAngleMax"
+        android:title="Max Finish Angle Degrees"
+        android:inputType="numberDecimal"
+        android:digits="0123456789"
+        android:defaultValue="139"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        android:key="minLungingAtCatchDelta"
+        android:title="Lunging at Catch Body Angle Min Delta"
+        android:inputType="numberSigned"
+        android:digits="0123456789"
+        android:defaultValue="-10"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        android:key="maxLungingAtCatchDelta"
+        android:title="Lunging at Catch Body Angle Max Delta"
+        android:inputType="numberDecimal"
+        android:digits="0123456789"
+        android:defaultValue="15"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        android:key="maxSlideRatio"
+        android:title="Max Slide Ration (drive/recovery)"
+        android:inputType="numberDecimal"
+        android:digits="0123456789."
+        android:defaultValue="1"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        android:key="minShinAngle"
+        android:title="Min Shin Angle Degrees"
+        android:inputType="numberDecimal"
+        android:digits="0123456789"
+        android:defaultValue="80"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        android:key="maxShinAngle"
+        android:title="Max Shin Angle Degrees"
+        android:inputType="numberDecimal"
+        android:digits="0123456789"
+        android:defaultValue="110"
+        app:useSimpleSummaryProvider="true" />
+    <Preference
+        android:title="Reset"
+        android:key="resetToDefault"
+        android:summary="Reset all settings to default values"
+        />
+
+</PreferenceScreen>

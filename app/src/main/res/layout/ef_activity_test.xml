@@ -14,8 +14,7 @@
     limitations under the License.
     -->
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:theme="@style/AppTheme.Posenet"
+    style="@style/Posenet"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:gravity="center"
@@ -29,21 +28,19 @@
         >
 
 
-        <androidx.appcompat.widget.Toolbar
+        <android.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="24dp"
             android:layout_span="2"
             android:background="@color/tfe_toolbar_background"
-            android:elevation="4dp"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Dark" >
+            android:elevation="4dp" >
                         <TextView
                             android:id="@+id/toolbar_text"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:textColor="@color/tfe_toolbar_text"/>
-        </androidx.appcompat.widget.Toolbar>
+        </android.widget.Toolbar>
 
     </TableRow>
 

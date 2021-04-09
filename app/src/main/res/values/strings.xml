@@ -9,4 +9,5 @@
   <string name="item_cam_on_left">Camera on left</string>
   <string name="camera_view">Camera view</string>
   <string name="generate_report">Generate Report</string>
+    <string name="thresholds">Thresholds</string>
 </resources>

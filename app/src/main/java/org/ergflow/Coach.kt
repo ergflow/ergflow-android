@@ -121,6 +121,9 @@ class Coach(val context: Context, val rower: Rower) {
         Log.i(TAG, "end of stroke")
         if (rower.isRowing) {
             report.saveFaultImages()
+            if (faultCheckers.find { it.badConsecutiveStrokes > 0 } != null) {
+                rower.errorStrokeCount++
+            }
         }
         clearStrokeData()
     }

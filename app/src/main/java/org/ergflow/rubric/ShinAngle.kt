@@ -19,6 +19,7 @@ class ShinAngle(coach: Coach) : BaseFaultChecker(coach) {
     override val title = "Shin Angle"
     override val description = "Checks for proper forward shin angle at the catch."
     override val strokeHistoryUnit = "°"
+    private var minAngle = 80
     private var maxAngle = 110
     private var previousAngle = 0
     private var catchTimeOfBadStroke = 0L
@@ -45,6 +46,10 @@ class ShinAngle(coach: Coach) : BaseFaultChecker(coach) {
         return ""
     }
 
+    override fun getThresholdInfo(): String {
+        return "[$minAngle, $maxAngle] $strokeHistoryUnit"
+    }
+
     override fun getTotalMark(): FaultChecker.Mark {
         return FaultChecker.Mark(totalGoodStrokes, strokeHistory.size)
     }
@@ -55,7 +60,7 @@ class ShinAngle(coach: Coach) : BaseFaultChecker(coach) {
                 // Catch angles outside of (30, 180) range are probably detection errors
                 if (this > 30 && this < 130) {
                     strokeHistory.add(this.toFloat())
-                    if (this <= maxAngle) {
+                    if (this >= minAngle && this <= maxAngle) {
                         goodStroke()
                     } else {
                         badStroke()

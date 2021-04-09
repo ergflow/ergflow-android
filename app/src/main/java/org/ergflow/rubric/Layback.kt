@@ -42,6 +42,10 @@ class Layback(coach: Coach) : BaseFaultChecker(coach) {
         return ""
     }
 
+    override fun getThresholdInfo(): String {
+        return "[$minFinishAngle, $maxFinishAngle] $strokeHistoryUnit"
+    }
+
     init {
         coach.listeners.add(this::onEvent)
     }

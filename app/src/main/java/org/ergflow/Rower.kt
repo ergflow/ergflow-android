@@ -55,6 +55,11 @@ class Rower {
     var strokeCount = 0
 
     /**
+     * Number of strokes that had at least one fault reported
+     */
+    var errorStrokeCount = 0
+
+    /**
      * Map of catch times keyed by stoke number
      */
     var catchTimes = mutableMapOf<Int, Long>()
@@ -469,6 +474,7 @@ class Rower {
         armDeviationPercent = 0
         legDeviationPercent = 0
         catchTimes.clear()
+        errorStrokeCount = 0
     }
 
     companion object {

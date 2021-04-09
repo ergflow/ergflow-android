@@ -209,6 +209,13 @@ class PosenetActivity :
             R.id.item_cam_on_right -> {
                 cameraOnRight = true
             }
+            R.id.item_thresholds -> {
+                parentFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.container, SettingsFragment())
+                    .addToBackStack(null)
+                    .commit()
+            }
             else -> {
             }
         }
@@ -278,8 +285,8 @@ class PosenetActivity :
     override fun onStart() {
         super.onStart()
         openCamera()
-        posenet = Posenet(this.context!!)
-        strokeAnalyzer = StrokeAnalyzer(this.context!!)
+        posenet = Posenet(this.requireContext())
+        strokeAnalyzer = StrokeAnalyzer(this.requireContext())
         strokeAnalyzer!!.display.itemArrayAdapter = itemArrayAdapter
     }
 
@@ -391,6 +398,8 @@ class PosenetActivity :
             // device this code runs.
             ErrorDialog.newInstance(getString(R.string.tfe_pn_camera_error))
                 .show(childFragmentManager, FRAGMENT_DIALOG)
+        } catch (e: Exception) {
+            Log.e(TAG, "Unable to setup camera outputs", e)
         }
     }
 
@@ -417,6 +426,8 @@ class PosenetActivity :
             Log.e(TAG, e.toString())
         } catch (e: InterruptedException) {
             throw RuntimeException("Interrupted while trying to lock camera opening.", e)
+        } catch (e: Exception) {
+            Log.e(TAG, "unable to open camera", e)
         }
     }
 
@@ -697,11 +708,6 @@ class PosenetActivity :
             )
 
             cameraDevice!!.createCaptureSession(sessionConfiguration)
-//        cameraDevice!!.createCaptureSession(
-//            listOf(recordingSurface),
-//            callback,
-//            null,
-//            )
         } catch (e: CameraAccessException) {
             Log.e(TAG, e.toString())
         }
@@ -722,8 +728,8 @@ class PosenetActivity :
     class ErrorDialog : DialogFragment() {
 
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-            AlertDialog.Builder(activity).setMessage(arguments!!.getString(ARG_MESSAGE))
-                .setPositiveButton(android.R.string.ok) { _, _ -> activity!!.finish() }.create()
+            AlertDialog.Builder(activity).setMessage(requireArguments().getString(ARG_MESSAGE))
+                .setPositiveButton(android.R.string.ok) { _, _ -> requireActivity().finish() }.create()
 
         companion object {
 

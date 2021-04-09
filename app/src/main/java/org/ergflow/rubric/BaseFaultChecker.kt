@@ -1,6 +1,8 @@
 package org.ergflow.rubric
 
+import android.content.SharedPreferences
 import android.util.Log
+import androidx.preference.PreferenceManager
 import org.ergflow.Coach
 import java.io.File
 import java.io.FileWriter
@@ -21,6 +23,7 @@ abstract class BaseFaultChecker(final override val coach: Coach) : FaultChecker 
     override var timeOfLastMessage = 0L
     private var numberOfStrokesReported = 0
     var lastReportedStroke = -1
+    val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(coach.context)!!
 
     val rower = coach.rower
 

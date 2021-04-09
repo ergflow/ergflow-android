@@ -19,7 +19,8 @@ import kotlin.math.roundToInt
 class CatchAngle(coach: Coach) : BaseFaultChecker(coach) {
 
     override val strokeHistoryUnit = "°"
-    private var maxAngle = 80
+
+    private var maxAngle = prefs.getString("catchAngleMax", null)?.toIntOrNull() ?: 80
 
     override val title = "Catch Angle"
     override val description = "Checks for proper forward body angle at the catch."
@@ -42,6 +43,10 @@ class CatchAngle(coach: Coach) : BaseFaultChecker(coach) {
 
     override fun getFixedMessage(): String {
         return ""
+    }
+
+    override fun getThresholdInfo(): String {
+        return "<= $maxAngle $strokeHistoryUnit"
     }
 
     override fun onEvent(event: Coach.Event) {
