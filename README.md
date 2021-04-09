@@ -11,7 +11,7 @@ If you have sound on then a voice will coach you if it detects three faults in a
 
 ![demo gif](images/ergflow_demo.gif)
 
-It also creates an HTML report that can be downloaded after the session.
+It also creates a report that can be downloaded after the session.
 
 [sample report](https://ergflow.github.io/samples/SampleReport.html)
 
@@ -73,5 +73,6 @@ https://play.google.com/store/apps/details?id=org.ergflow
 
 #### Very laggy or only a couple of frames per second
 
+* Sometimes closeing the app completely and restarting it fixes this.
 * ErgFlow uses the Neural Network API which is very hardware dependent. Different makes and models of devices have different results. Older devices will likely not work as well.
 * Close other apps that may be competing for resources.
