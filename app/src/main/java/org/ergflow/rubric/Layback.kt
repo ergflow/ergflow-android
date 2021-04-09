@@ -95,7 +95,7 @@ class Layback(coach: Coach) : BaseFaultChecker(coach) {
         // Assume error in detecting finish if elbow is not past body.
         // If elbow is in front of body then humerus angle will be greater than body angle.
         val humerusAngle = rower.angle(elbow, shoulder)
-        if (humerusAngle > finishAngle) {
+        if (humerusAngle > finishAngle + 10) {
             Log.w(
                 TAG,
                 "Stroke ${rower.strokeCount}: Invalid detection " +
