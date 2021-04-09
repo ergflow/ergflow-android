@@ -35,7 +35,7 @@ https://play.google.com/store/apps/details?id=org.ergflow
 
 ### Positioning the phone
 
-* Make sure there are no other people in the background or anything else that may interfere with the detection.
+* Make sure there are no other people in the background or [anything else that may interfere with the detection](images/detectionError.png).
 * You can use the front or back camera and can put the camera on the right or left side of the rowing machine. Select which camera and the side you want by tapping on the three dots to open the menu.
 
 ![menu](images/menu.jpg)
