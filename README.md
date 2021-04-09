@@ -23,9 +23,11 @@ https://play.google.com/store/apps/details?id=org.ergflow
 
 ### Camera mount
 
-* You will need a way to position your phone. This DIY method works well for holding the phone.
-
-![camera mount](images/camera_mount.jpg)
+* You will need a way to position your phone so that the camera can point in the right direction and that it doesn't move.
+* There are lots of ways to do this:
+  - Use back camera and place on ground leaning against something
+  - Use a phone tripod mount
+  - Create a [DIY phone mount](images/camera_mount.jpg)
 
 ### Cast your phone to a large screen
 
